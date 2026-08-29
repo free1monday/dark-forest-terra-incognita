@@ -1,0 +1,18 @@
+{
+  "name": "dark-forest-terra-incognita",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Тёмный Лес: Терра Инкогнита — browser idle MMO strategy",
+  "scripts": {
+    "dev": "npm run dev:server & npm run dev:client",
+    "dev:client": "npm run dev --prefix client",
+    "dev:server": "npm run dev --prefix server",
+    "build": "npm run build --prefix client && npm run typecheck --prefix server",
+    "build:client": "npm run build --prefix client",
+    "typecheck:server": "npm run typecheck --prefix server",
+    "db:migrate": "npm run db:migrate --prefix server",
+    "db:push": "npm run db:push --prefix server",
+    "postinstall": "npm install --prefix client && npm install --prefix server"
+  }
+}

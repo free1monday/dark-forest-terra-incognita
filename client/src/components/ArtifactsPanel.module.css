@@ -1,0 +1,96 @@
+.panel {
+  padding: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 280px;
+  flex: 1;
+}
+
+.item {
+  text-align: left;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(2, 6, 23, 0.4);
+  padding: 0.55rem 0.65rem;
+  color: inherit;
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.badge {
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  opacity: 0.85;
+}
+
+.effects {
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.common {
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #e2e8f0;
+}
+
+.rare {
+  border-color: rgba(34, 211, 238, 0.55);
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.15);
+}
+
+.legendary {
+  border-color: rgba(251, 191, 36, 0.65);
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.2);
+}
+
+.mythic {
+  border-color: rgba(167, 139, 250, 0.75);
+  box-shadow: 0 0 16px rgba(139, 92, 246, 0.35);
+  animation: pulseMyth 2.8s ease-in-out infinite;
+}
+
+@keyframes pulseMyth {
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(167, 139, 250, 0.55);
+  }
+}
+
+.rare,
+.legendary,
+.mythic {
+  animation: artPulse 2.8s ease-in-out infinite;
+}
+
+@keyframes artPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(167, 139, 250, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(192, 132, 252, 0.45);
+  }
+}

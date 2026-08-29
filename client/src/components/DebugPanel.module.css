@@ -1,0 +1,16 @@
+.wrap {
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.toggle {
+  align-self: flex-start;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}

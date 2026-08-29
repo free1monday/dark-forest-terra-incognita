@@ -1,0 +1,153 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 92;
+  background: rgba(10, 4, 24, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(6px);
+}
+
+.panel {
+  width: min(940px, 100%);
+  max-height: min(92vh, 860px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid rgba(192, 132, 252, 0.45);
+  background:
+    linear-gradient(160deg, rgba(40, 10, 60, 0.92), rgba(2, 8, 24, 0.98)),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(255, 255, 255, 0.015) 3px,
+      rgba(255, 255, 255, 0.015) 4px
+    );
+  box-shadow: 0 0 50px rgba(168, 85, 247, 0.2);
+  overflow: hidden;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #e9d5ff, #f8fafc, #c4b5fd);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.sub {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: #c4b5fd;
+}
+
+.slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+}
+
+.slot {
+  min-height: 64px;
+  border: 1px dashed rgba(216, 180, 254, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem;
+  background: rgba(76, 29, 149, 0.2);
+  font-size: 0.78rem;
+}
+
+.slotFilled {
+  border-style: solid;
+  border-color: rgba(250, 250, 250, 0.35);
+  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.08);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  overflow-y: auto;
+  max-height: 420px;
+}
+
+.law {
+  padding: 0.6rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  background: rgba(2, 6, 23, 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.lawActive {
+  border-color: rgba(250, 250, 250, 0.45);
+  background: rgba(88, 28, 135, 0.35);
+}
+
+.lawName {
+  font-weight: 650;
+  color: #f5f3ff;
+}
+
+.lawDesc {
+  font-size: 0.75rem;
+  color: #c4b5fd;
+  line-height: 1.35;
+}
+
+.lawMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.cost {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: #e9d5ff;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.warn {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #f9a8d4;
+}
+
+.glitch {
+  animation: flicker 3.5s infinite;
+}
+
+@keyframes flicker {
+  0%,
+  92%,
+  100% {
+    opacity: 1;
+  }
+  93% {
+    opacity: 0.7;
+    transform: translateX(1px);
+  }
+  94% {
+    opacity: 1;
+    transform: none;
+  }
+  96% {
+    opacity: 0.85;
+  }
+}

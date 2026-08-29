@@ -1,0 +1,68 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+!**/.env.example
+!**/.env.production.example
+.server/.env
+server/.env
+client/.env
+
+# SQLite / local DB
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+server/prisma/dev.db
+server/prisma/*.db
+server/data/
+**/dev.db
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# Logs & caches
+logs/
+*.log
+npm-debug.log*
+.npm/
+.cache/
+.arena/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.parcel-cache/
+.vite/
+__pycache__/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Prisma engines cache (regenerated)
+# keep schema & migrations — ignore generated client is inside node_modules
+
+# Local tooling
+.e2b/
+*.local
+
+# Sandbox / home clutter (do not publish)
+.config/
+.gitconfig
+.npm/
+.cache/
+.local/
+*.pyc

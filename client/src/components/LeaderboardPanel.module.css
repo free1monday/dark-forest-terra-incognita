@@ -1,0 +1,129 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(2, 6, 23, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(5px);
+}
+
+.panel {
+  width: min(860px, 100%);
+  max-height: min(92vh, 820px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  background: linear-gradient(165deg, rgba(8, 20, 48, 0.96), rgba(2, 8, 24, 0.98));
+  box-shadow: 0 0 40px rgba(34, 211, 238, 0.12);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #67e8f9;
+}
+
+.sub {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+.tableWrap {
+  overflow: auto;
+  max-height: 520px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.table th {
+  text-align: left;
+  padding: 0.5rem 0.65rem;
+  background: rgba(8, 47, 73, 0.55);
+  color: #7dd3fc;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  position: sticky;
+  top: 0;
+}
+
+.table td {
+  padding: 0.45rem 0.65rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  font-family: var(--mono);
+}
+
+.rowCurrent {
+  background: rgba(251, 191, 36, 0.12);
+}
+
+.rowDestroyed {
+  opacity: 0.55;
+}
+
+.rank1 {
+  color: #fde68a;
+  font-weight: 700;
+}
+.rank2 {
+  color: #e2e8f0;
+  font-weight: 650;
+}
+.rank3 {
+  color: #fdba74;
+  font-weight: 650;
+}
+
+.bot {
+  font-size: 0.65rem;
+  color: var(--text-mute);
+  margin-left: 0.35rem;
+}
+
+.currentBox {
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.08);
+  font-size: 0.82rem;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--text-mute);
+}
+
+@media (max-width: 768px) {
+  .table {
+    display: none;
+  }
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+}

@@ -1,0 +1,33 @@
+.wrap {
+  text-align: center;
+  padding: 0.5rem 1rem;
+}
+
+.title {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: linear-gradient(90deg, #67e8f9, #a5b4fc, #c4b5fd);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 0.35rem;
+  text-shadow: 0 0 40px rgba(34, 211, 238, 0.25);
+}
+
+.slogan {
+  font-family: var(--mono);
+  font-size: clamp(0.78rem, 1.5vw, 0.95rem);
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  font-style: italic;
+}
+
+.compact .slogan {
+  font-size: 0.78rem;
+  opacity: 0.9;
+}
+
+.compact {
+  padding: 0.15rem 0.5rem;
+}

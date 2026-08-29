@@ -1,0 +1,70 @@
+.panel {
+  padding: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 280px;
+  flex: 1;
+}
+
+.item {
+  text-align: left;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(2, 6, 23, 0.4);
+  padding: 0.55rem 0.65rem;
+  color: inherit;
+}
+
+.name {
+  font-weight: 650;
+  font-size: 0.9rem;
+}
+
+.sub {
+  font-size: 0.72rem;
+  color: var(--text-mute);
+  margin-top: 0.1rem;
+}
+
+.desc {
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.belt {
+  border-color: rgba(148, 163, 184, 0.4);
+}
+.cloud {
+  border-color: rgba(100, 116, 139, 0.6);
+}
+.worm {
+  border-color: rgba(56, 189, 248, 0.5);
+}
+.neutron {
+  border-color: rgba(165, 243, 252, 0.55);
+}
+.bh {
+  border-color: rgba(244, 63, 94, 0.45);
+}
+.relic {
+  border-color: rgba(52, 211, 153, 0.45);
+}
+.lens {
+  border-color: rgba(129, 140, 248, 0.55);
+}
+.vac {
+  border-color: rgba(251, 191, 36, 0.45);
+}
+.rift {
+  border-color: rgba(167, 139, 250, 0.7);
+  box-shadow: 0 0 16px rgba(139, 92, 246, 0.3);
+}

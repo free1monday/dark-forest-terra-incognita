@@ -1,0 +1,324 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String         @id @default(cuid())
+  email          String         @unique
+  passwordHash   String
+  premiumCredits Int            @default(0)
+  /// Stage 9 — developer admin panel access
+  isAdmin        Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  civilization   Civilization?
+  purchases      Purchase[]
+}
+
+model Civilization {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name                  String
+  seed                  String
+  level                 Int      @default(1)
+  prosperityScore       Int      @default(100)
+  /// Stage 7: player civ destroyed by dark strike (future PvP)
+  isDestroyed           Boolean  @default(false)
+  greatStructureName    String
+  galaxyName            String
+  sectorName            String
+  systemName            String
+  coordinatesX          Int
+  coordinatesY          Int
+  coordinatesZ          Int
+  starType              String
+  mainPlanetName        String
+  mainPlanetType        String
+  habitability          String
+  anomalyType           String
+  radarQuality          Int
+  backgroundRadiation   Int      @default(50)
+  vacuumStability       Int      @default(50)
+  darkMatterDensity     Int      @default(50)
+  eventProbability      Float    @default(1)
+  scienceFocus          Int
+  expansionFocus        Int
+  secrecy               Int
+  aggression            Int
+  diplomacyFocus        Int
+  riskLevel             Int
+  lastTickAt            DateTime
+  highEnergyMilliRem    Int      @default(0)
+  totalHighEnergyMined  Int      @default(0)
+  successfulExpeditions Int      @default(0)
+  expeditionNonce       Int      @default(0)
+  has4DRiftAccess       Boolean  @default(false)
+  /// Stage 4: how "bright" this civ is to foreign sensors
+  signalExposure        Float    @default(1.0)
+  /// Stage 6 defense buffs
+  evacuationActive      Boolean  @default(false)
+  commJammedUntil       DateTime?
+  /// Stage 8 late-game
+  physicsLaws              String   @default("[]")
+  isInterstellarTraveling  Boolean  @default(false)
+  galaxyTravelFinishesAt   DateTime?
+  galaxyTravelNonce        Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  resources           ResourceState?
+  buildings           Building[]
+  expeditions         Expedition[]
+  journal             JournalEvent[]
+  artifacts           Artifact[]
+  discoveredAnomalies DiscoveredAnomaly[]
+  contactsObserved    Contact[]           @relation("ObserverContacts")
+  contactsAsTarget    Contact[]           @relation("TargetContacts")
+  diplomaticThreads   DiplomaticThread[]  @relation("ObserverThreads")
+  combatActionsAttack CombatAction[]      @relation("AttackerActions")
+  combatReportsAttack CombatReport[]      @relation("AttackerReports")
+
+  @@index([prosperityScore])
+  @@index([level])
+  @@index([isDestroyed])
+}
+
+model ResourceState {
+  civilizationId     String       @id
+  civilization       Civilization @relation(fields: [civilizationId], references: [id], onDelete: Cascade)
+  highEnergy         Int          @default(40)
+  antimatter         Int          @default(0)
+  darkEnergy         Int          @default(0)
+  darkMatter         Int          @default(0)
+  fermions           Int          @default(0)
+  highEnergyCapacity Int          @default(1000)
+  antimatterCapacity Int          @default(100)
+  darkEnergyCapacity Int          @default(100)
+  darkMatterCapacity Int          @default(100)
+  fermionsCapacity   Int          @default(50)
+  /// Stage 7 permanent shop capacity multipliers (percent points, e.g. 10 = +10%)
+  capacityBonusHe        Int      @default(0)
+  capacityBonusFermions  Int      @default(0)
+  capacityBonusAll       Int      @default(0)
+  updatedAt          DateTime     @updatedAt
+}
+
+model Building {
+  id             String       @id @default(cuid())
+  civilizationId String
+  civilization   Civilization @relation(fields: [civilizationId], references: [id], onDelete: Cascade)
+  buildingType   String
+  level          Int          @default(0)
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([civilizationId, buildingType])
+  @@index([civilizationId])
+}
+
+model Expedition {
+  id             String       @id @default(cuid())
+  civilizationId String
+  civilization   Civilization @relation(fields: [civilizationId], references: [id], onDelete: Cascade)
+  /// legacy field; mirrors expeditionType
+  type           String       @default("localScan")
+  expeditionType String       @default("localScan")
+  status         String       @default("active") // active | completed | cancelled
+  startedAt      DateTime
+  finishesAt     DateTime
+  result         String?
+  outcomeType    String?
+  rewardData     String?
+  seed           String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([civilizationId, status])
+}
+
+model Artifact {
+  id                 String       @id @default(cuid())
+  civilizationId     String
+  civilization       Civilization @relation(fields: [civilizationId], references: [id], onDelete: Cascade)
+  artifactKey        String
+  name               String
+  rarity             String
+  effects            String
+  sourceExpeditionId String?
+  createdAt          DateTime     @default(now())
+
+  @@index([civilizationId])
+}
+
+model DiscoveredAnomaly {
+  id             String       @id @default(cuid())
+  civilizationId String
+  civilization   Civilization @relation(fields: [civilizationId], references: [id], onDelete: Cascade)
+  anomalyType    String
+  name           String
+  description    String
+  effects        String
+  sectorSeed     String
+  createdAt      DateTime     @default(now())
+
+  @@index([civilizationId])
+}
+
+model Contact {
+  id                     String             @id @default(cuid())
+  observerCivilizationId String
+  observer               Civilization       @relation("ObserverContacts", fields: [observerCivilizationId], references: [id], onDelete: Cascade)
+  targetCivilizationId   String?
+  target                 Civilization?      @relation("TargetContacts", fields: [targetCivilizationId], references: [id], onDelete: SetNull)
+  targetBotData          String?
+  distance               Float
+  distanceAccuracy       Float
+  distanceNoise          Float              @default(0)
+  levelMin               Int
+  levelMax               Int
+  levelAccuracy          Float
+  confidence             Float
+  signalType             String
+  coordinatesX           Float
+  coordinatesY           Float
+  coordinatesZ           Float
+  coordinatesAccuracy    Float
+  galaxyName             String?
+  sectorName             String?
+  systemName             String?
+  isFalsePositive        Boolean            @default(false)
+  firstDetectedAt        DateTime           @default(now())
+  lastUpdated            DateTime           @updatedAt
+  status                 String             @default("detected")
+  sourceExpeditionId     String?
+  thread                 DiplomaticThread?
+  /// Stage 6: JSON TargetStructures for bots / snapshot
+  targetStructures       String?
+  isDestroyed            Boolean            @default(false)
+  defenseStatus          String?
+  /// How many successful recons (0–5)
+  reconLevel             Int                @default(0)
+  trueCoordinatesX       Float?
+  trueCoordinatesY       Float?
+  trueCoordinatesZ       Float?
+
+  @@index([observerCivilizationId, status])
+  @@index([targetCivilizationId])
+}
+
+model DiplomaticThread {
+  id                     String               @id @default(cuid())
+  observerCivilizationId String
+  observer               Civilization         @relation("ObserverThreads", fields: [observerCivilizationId], references: [id], onDelete: Cascade)
+  contactId              String               @unique
+  contact                Contact              @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  status                 String               @default("active") // active | closed | hostile
+  trust                  Int                  @default(50)
+  tension                Int                  @default(0)
+  messageNonce           Int                  @default(0)
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  messages               DiplomaticMessage[]
+
+  @@index([observerCivilizationId, status])
+}
+
+model DiplomaticMessage {
+  id               String           @id @default(cuid())
+  threadId         String
+  thread           DiplomaticThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderIsObserver Boolean
+  cardType         String
+  textFlavor       String           @default("")
+  sentAt           DateTime
+  deliverAt        DateTime
+  status           String           @default("IN_TRANSIT") // IN_TRANSIT | DELIVERED | READ | REJECTED
+  encrypted        Boolean          @default(false)
+  createdAt        DateTime         @default(now())
+
+  @@index([threadId, deliverAt])
+  @@index([threadId, status])
+}
+
+model CombatAction {
+  id                     String        @id @default(cuid())
+  attackerCivilizationId String
+  attacker               Civilization  @relation("AttackerActions", fields: [attackerCivilizationId], references: [id], onDelete: Cascade)
+  targetContactId        String?
+  targetCivilizationId   String?
+  attackType             String
+  targetCoordinatesX     Float         @default(0)
+  targetCoordinatesY     Float         @default(0)
+  targetCoordinatesZ     Float         @default(0)
+  status                 String        @default("PREPARING")
+  prepStartedAt          DateTime
+  prepFinishesAt         DateTime
+  transitFinishesAt      DateTime?
+  resolvedAt             DateTime?
+  outcome                String?
+  damageDealt            Float?
+  damageTaken            Float?
+  hitChance              Float?
+  attackPower            Float?
+  defensePower           Float?
+  seedChannel            String        @default("")
+  createdAt              DateTime      @default(now())
+  reports                CombatReport[]
+
+  @@index([attackerCivilizationId, status])
+  @@index([targetContactId])
+}
+
+model CombatReport {
+  id                     String       @id @default(cuid())
+  combatActionId         String
+  combatAction           CombatAction @relation(fields: [combatActionId], references: [id], onDelete: Cascade)
+  attackerCivilizationId String
+  attacker               Civilization @relation("AttackerReports", fields: [attackerCivilizationId], references: [id], onDelete: Cascade)
+  targetCivilizationId   String?
+  attackType             String
+  outcome                String
+  hitChance              Float        @default(0)
+  attackPower            Float        @default(0)
+  defensePower           Float        @default(0)
+  damageDealt            Float        @default(0)
+  damageTaken            Float        @default(0)
+  flavorText             String       @default("")
+  targetName             String?
+  createdAt              DateTime     @default(now())
+
+  @@index([attackerCivilizationId, createdAt])
+  @@index([combatActionId])
+}
+
+model JournalEvent {
+  id             String       @id @default(cuid())
+  civilizationId String
+  civilization   Civilization @relation(fields: [civilizationId], references: [id], onDelete: Cascade)
+  type           String
+  title          String       @default("")
+  message        String
+  payload        String?
+  createdAt      DateTime     @default(now())
+
+  @@index([civilizationId, createdAt])
+}
+
+model Purchase {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Shop item key (he_small, capacity_he, …) or legacy itemType
+  itemType    String
+  amount      Int
+  amountSpent Int      @default(0)
+  mock        Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, createdAt])
+}

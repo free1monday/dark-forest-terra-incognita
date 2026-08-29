@@ -1,0 +1,99 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: rgba(2, 6, 23, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(6px);
+  animation: fadeIn 0.35s ease;
+}
+
+.card {
+  width: min(480px, 100%);
+  padding: 1.35rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  animation: slideUp 0.4s ease;
+}
+
+.step {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+  background: linear-gradient(90deg, #67e8f9, #a5b4fc, #c4b5fd);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+
+.body {
+  margin: 0;
+  color: var(--text-dim);
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.dots {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.35);
+}
+
+.dotOn {
+  background: var(--cyan);
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}

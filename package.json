@@ -1,7 +1,7 @@
 {
   "name": "dark-forest-terra-incognita",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "Тёмный Лес: Терра Инкогнита — browser idle MMO strategy",
   "scripts": {
@@ -13,6 +13,14 @@
     "typecheck:server": "npm run typecheck --prefix server",
     "db:migrate": "npm run db:migrate --prefix server",
     "db:push": "npm run db:push --prefix server",
-    "postinstall": "npm install --prefix client && npm install --prefix server"
+    "db:generate": "npm run db:generate --prefix server",
+    "postinstall": "npm install --prefix client && npm install --prefix server",
+    "vercel-install": "npm install --prefix client && npm install --prefix server && npm install",
+    "vercel-build": "npm run db:generate --prefix server && (cd server && npx prisma migrate deploy || echo 'WARN: migrate deploy skipped/failed — check DATABASE_URL') && npm run build --prefix client && node scripts/bundle-api.mjs",
+    "bundle:api": "node scripts/bundle-api.mjs"
+  },
+  "devDependencies": {
+    "@vercel/node": "^5.5.15",
+    "esbuild": "^0.28.2"
   }
 }

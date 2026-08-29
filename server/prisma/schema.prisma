@@ -1,9 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // native = local dev; rhel-openssl-3.0.x = Vercel Node 20 serverless
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -63,8 +65,8 @@ model Civilization {
   /// Stage 6 defense buffs
   evacuationActive      Boolean  @default(false)
   commJammedUntil       DateTime?
-  /// Stage 8 late-game
-  physicsLaws              String   @default("[]")
+  /// Stage 8 late-game — JSON array of law ids (stored as text for app-level parse)
+  physicsLaws              String   @default("[]") @db.Text
   isInterstellarTraveling  Boolean  @default(false)
   galaxyTravelFinishesAt   DateTime?
   galaxyTravelNonce        Int      @default(0)
@@ -130,9 +132,9 @@ model Expedition {
   status         String       @default("active") // active | completed | cancelled
   startedAt      DateTime
   finishesAt     DateTime
-  result         String?
+  result         String?      @db.Text
   outcomeType    String?
-  rewardData     String?
+  rewardData     String?      @db.Text
   seed           String
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -147,7 +149,7 @@ model Artifact {
   artifactKey        String
   name               String
   rarity             String
-  effects            String
+  effects            String       @db.Text
   sourceExpeditionId String?
   createdAt          DateTime     @default(now())
 
@@ -160,8 +162,8 @@ model DiscoveredAnomaly {
   civilization   Civilization @relation(fields: [civilizationId], references: [id], onDelete: Cascade)
   anomalyType    String
   name           String
-  description    String
-  effects        String
+  description    String       @db.Text
+  effects        String       @db.Text
   sectorSeed     String
   createdAt      DateTime     @default(now())
 
@@ -174,7 +176,7 @@ model Contact {
   observer               Civilization       @relation("ObserverContacts", fields: [observerCivilizationId], references: [id], onDelete: Cascade)
   targetCivilizationId   String?
   target                 Civilization?      @relation("TargetContacts", fields: [targetCivilizationId], references: [id], onDelete: SetNull)
-  targetBotData          String?
+  targetBotData          String?            @db.Text
   distance               Float
   distanceAccuracy       Float
   distanceNoise          Float              @default(0)
@@ -197,7 +199,7 @@ model Contact {
   sourceExpeditionId     String?
   thread                 DiplomaticThread?
   /// Stage 6: JSON TargetStructures for bots / snapshot
-  targetStructures       String?
+  targetStructures       String?            @db.Text
   isDestroyed            Boolean            @default(false)
   defenseStatus          String?
   /// How many successful recons (0–5)
@@ -233,7 +235,7 @@ model DiplomaticMessage {
   thread           DiplomaticThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
   senderIsObserver Boolean
   cardType         String
-  textFlavor       String           @default("")
+  textFlavor       String           @default("") @db.Text
   sentAt           DateTime
   deliverAt        DateTime
   status           String           @default("IN_TRANSIT") // IN_TRANSIT | DELIVERED | READ | REJECTED
@@ -287,7 +289,7 @@ model CombatReport {
   defensePower           Float        @default(0)
   damageDealt            Float        @default(0)
   damageTaken            Float        @default(0)
-  flavorText             String       @default("")
+  flavorText             String       @default("") @db.Text
   targetName             String?
   createdAt              DateTime     @default(now())
 
@@ -301,8 +303,8 @@ model JournalEvent {
   civilization   Civilization @relation(fields: [civilizationId], references: [id], onDelete: Cascade)
   type           String
   title          String       @default("")
-  message        String
-  payload        String?
+  message        String       @db.Text
+  payload        String?      @db.Text
   createdAt      DateTime     @default(now())
 
   @@index([civilizationId, createdAt])

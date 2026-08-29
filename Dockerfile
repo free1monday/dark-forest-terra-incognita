@@ -1,4 +1,4 @@
-# Multi-stage: build client, run API that also serves static (or compose separates them)
+# Multi-stage: build client, run API with Postgres
 FROM node:20-bookworm-slim AS deps
 WORKDIR /app
 COPY package.json ./
@@ -15,6 +15,7 @@ RUN npm run build --prefix client
 FROM node:20-bookworm-slim AS server
 WORKDIR /app/server
 ENV NODE_ENV=production
+RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY server/package.json ./
 COPY --from=deps /app/server/node_modules ./node_modules
 COPY server ./

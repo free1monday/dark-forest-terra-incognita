@@ -17,13 +17,19 @@ import { isAppError } from './utils/errors.js';
 
 export async function buildApp() {
   const app = Fastify({
-    logger: true,
+    logger: process.env.NODE_ENV !== 'production',
+    // Trust proxy headers on Vercel
+    trustProxy: true,
   });
 
-  // In development allow any browser origin (preview hosts). Production uses CLIENT_ORIGIN.
+  // Production: CLIENT_ORIGIN (comma-separated allowed). Dev: any origin.
+  // Vercel same-origin SPA can omit CORS when API is under /api on same host.
+  const rawOrigin = process.env.CLIENT_ORIGIN;
   const origin =
     process.env.NODE_ENV === 'production'
-      ? process.env.CLIENT_ORIGIN || false
+      ? rawOrigin
+        ? rawOrigin.split(',').map((s) => s.trim()).filter(Boolean)
+        : true
       : true;
 
   await app.register(cors, {
@@ -32,7 +38,7 @@ export async function buildApp() {
   });
 
   await app.register(rateLimit, {
-    max: 200,
+    max: Number(process.env.RATE_LIMIT_MAX ?? 200),
     timeWindow: '1 minute',
   });
 
@@ -92,4 +98,17 @@ export async function buildApp() {
   await app.register(debugRoutes);
 
   return app;
+}
+
+/** Cached Fastify instance for serverless warm invocations. */
+let appPromise: Promise<Awaited<ReturnType<typeof buildApp>>> | null = null;
+
+export function getApp() {
+  if (!appPromise) {
+    appPromise = buildApp().then(async (app) => {
+      await app.ready();
+      return app;
+    });
+  }
+  return appPromise;
 }

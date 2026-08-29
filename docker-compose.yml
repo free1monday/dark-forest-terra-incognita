@@ -1,4 +1,21 @@
 services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: df
+      POSTGRES_PASSWORD: df
+      POSTGRES_DB: darkforest
+    ports:
+      - "5432:5432"
+    volumes:
+      - df-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U df -d darkforest"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   api:
     build:
       context: .
@@ -6,15 +23,16 @@ services:
     ports:
       - "4000:4000"
     environment:
-      DATABASE_URL: file:./data/prod.db
+      DATABASE_URL: postgresql://df:df@db:5432/darkforest?schema=public
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       PORT: 4000
       HOST: 0.0.0.0
       NODE_ENV: production
-      CLIENT_ORIGIN: ${CLIENT_ORIGIN:-http://localhost:5173}
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN:-http://localhost:8080}
       ADMIN_SECRET: ${ADMIN_SECRET:-}
-    volumes:
-      - df-data:/app/server/data
+    depends_on:
+      db:
+        condition: service_healthy
 
   web:
     image: nginx:1.27-alpine
@@ -27,4 +45,4 @@ services:
       - api
 
 volumes:
-  df-data:
+  df-pgdata:

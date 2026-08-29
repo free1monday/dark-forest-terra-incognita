@@ -23,8 +23,9 @@
 ## Стек
 
 - **Client:** Vite 8, React 19, TypeScript, Zustand, CSS Modules
-- **Server:** Fastify 5, Prisma 5, SQLite, JWT, Zod
+- **Server:** Fastify 5, Prisma 5, **PostgreSQL**, JWT, Zod
 - **Shared:** типы, RNG (seeded), формулы, баланс, GameState DTO
+- **Deploy:** Vercel (SPA + serverless `/api`) — см. [docs/DEPLOY.md](docs/DEPLOY.md)
 
 ## Структура
 
@@ -46,11 +47,14 @@
 npm install
 # или: npm install --prefix client && npm install --prefix server
 
+# Postgres (Docker)
+docker compose up -d db
+
 cp server/.env.example server/.env
 cp client/.env.example client/.env
 
 cd server
-npx prisma migrate dev
+npx prisma migrate deploy   # или migrate dev
 npm run dev          # :4000
 
 # другой терминал

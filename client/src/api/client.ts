@@ -1,6 +1,11 @@
 import { AUTH_TOKEN_KEY } from '@shared';
 
-/** Empty string => same-origin (Vite proxies /api in dev). */
+/**
+ * API base URL:
+ * - Production / Vercel: relative "" so fetch('/api/...') hits same origin (rewrites → serverless).
+ * - Optional override: VITE_API_URL=https://api.example.com (no trailing slash).
+ * - Local Vite: leave empty; vite.config proxies /api → http://127.0.0.1:4000.
+ */
 const API_URL = ((import.meta.env.VITE_API_URL as string | undefined) ?? '').replace(/\/$/, '');
 
 export class ApiError extends Error {

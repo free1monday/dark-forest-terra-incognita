@@ -10,10 +10,10 @@
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/index.js": {
+    "api/index.ts": {
       "memory": 1024,
       "maxDuration": 30,
-      "includeFiles": "server/node_modules/.prisma/**"
+      "includeFiles": "{server/prisma/**,server/node_modules/.prisma/**,server/node_modules/@prisma/client/**,shared/**}"
     }
   }
 }

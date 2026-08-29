@@ -16,7 +16,7 @@
     "db:generate": "npm run db:generate --prefix server",
     "postinstall": "npm install --prefix client && npm install --prefix server",
     "vercel-install": "npm install --prefix client && npm install --prefix server && npm install",
-    "vercel-build": "npm run db:generate --prefix server && (cd server && npx prisma migrate deploy || echo 'WARN: migrate deploy skipped/failed — check DATABASE_URL') && npm run build --prefix client && node scripts/bundle-api.mjs",
+    "vercel-build": "npm run db:generate --prefix server && (cd server && npx prisma migrate deploy || echo 'WARN: migrate deploy skipped/failed — check DATABASE_URL') && npm run build --prefix client",
     "bundle:api": "node scripts/bundle-api.mjs"
   },
   "devDependencies": {

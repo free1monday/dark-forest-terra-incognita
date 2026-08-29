@@ -141,3 +141,19 @@ npm run vercel-build          # как на Vercel (нужен DATABASE_URL дл
 cd server && npx prisma studio
 cd server && npx tsx smoke-stage9.mts
 ```
+
+## Bootstrap empty Postgres (Vercel)
+
+If tables are missing after first deploy:
+
+1. Set env `INIT_DB_SECRET` (same value as in `.env.example` or a new secret).
+2. Open once:
+   ```
+   https://YOUR_APP.vercel.app/api/init-db?secret=YOUR_INIT_DB_SECRET
+   ```
+3. Expect JSON with `tableCount` > 0 and `migrate.ok: true`.
+4. Optional wipe+recreate:
+   ```
+   https://YOUR_APP.vercel.app/api/drop-init?secret=YOUR_INIT_DB_SECRET
+   ```
+5. Remove or rotate `INIT_DB_SECRET` after bootstrap.

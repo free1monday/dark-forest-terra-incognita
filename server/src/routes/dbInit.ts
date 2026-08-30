@@ -1,7 +1,6 @@
 import { execFile } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import type { FastifyInstance } from 'fastify';
 import { prisma } from '../utils/prisma.js';
@@ -25,13 +24,13 @@ function assertInitSecret(secret: unknown) {
 
 function resolvePrismaPaths() {
   const cwd = process.cwd();
-  const here = path.dirname(fileURLToPath(import.meta.url));
   const candidates = [
     path.join(cwd, 'server'),
     cwd,
     path.join(cwd, '..', 'server'),
-    path.resolve(here, '../..'),
-    path.resolve(here, '../../..', 'server'),
+    // When running from a bundle under /var/task/api, server is sibling
+    path.join(cwd, 'api', '..', 'server'),
+    path.resolve(cwd, '..', 'server'),
   ];
 
   let serverRoot = candidates[0];

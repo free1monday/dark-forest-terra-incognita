@@ -16,7 +16,7 @@
     "db:generate": "npm run db:generate --prefix server",
     "postinstall": "npm install --prefix client && npm install --prefix server",
     "vercel-install": "npm install --prefix client && npm install --prefix server && npm install",
-    "vercel-build": "npm run db:generate --prefix server && npm run build --prefix client",
+    "vercel-build": "npm run db:generate --prefix server && npm run build --prefix client && node scripts/bundle-api.mjs",
     "bundle:api": "node scripts/bundle-api.mjs"
   },
   "devDependencies": {

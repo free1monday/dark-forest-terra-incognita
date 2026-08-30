@@ -6,20 +6,14 @@
   "installCommand": "npm run vercel-install",
   "framework": null,
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api"
-    },
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/index.ts": {
+    "api/index.js": {
       "memory": 1024,
       "maxDuration": 60,
-      "includeFiles": "{server/prisma/**,server/node_modules/.prisma/**,server/node_modules/@prisma/client/**,server/node_modules/prisma/**,shared/**}"
+      "includeFiles": "server/**"
     }
   }
 }

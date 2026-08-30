@@ -1,4 +1,4 @@
-import { BUILDINGS, CAPACITY_PER_CIV_LEVEL, CAPACITY_PER_COLLIDER_LEVEL, EXPEDITION_OUTCOMES } from './balance';
+import { BUILDINGS, CAPACITY_PER_CIV_LEVEL, CAPACITY_PER_COLLIDER_LEVEL, EXPEDITION_OUTCOMES, HE_PRODUCTION_GLOBAL_MUL } from './balance';
 import type { BuildingId } from './constants';
 import {
   DARK_ENERGY_SIPHON_PER_LEVEL,
@@ -78,8 +78,9 @@ export function highEnergyMilliPerSecond(
   const research = getBuildingLevel(buildings, 'research_node');
   const scienceMul = 1 + research * 0.01 + focuses.scienceFocus / 500;
   const artMul = (bonuses.heMul ?? 1) * (bonuses.allMul ?? 1) * (bonuses.physicsAllMul ?? 1);
+  const rateMilli = Math.floor(baseMilli * levelMul * expansionMul * scienceMul * artMul);
   const passiveMilli = Math.floor((bonuses.passive?.highEnergy ?? 0) * 1000);
-  return Math.floor(baseMilli * levelMul * expansionMul * scienceMul * artMul) + passiveMilli;
+  return Math.floor((rateMilli + passiveMilli) * HE_PRODUCTION_GLOBAL_MUL);
 }
 
 /** Dark energy /s from vacuum siphon (+ anomaly passive), integer milli. */

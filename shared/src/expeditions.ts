@@ -6,6 +6,14 @@ import {
   type ArtifactRarity,
 } from './artifacts';
 import type { BuildingId, ResourceId } from './constants';
+import { EXPEDITION_HE_REWARD_MUL } from './balance';
+
+function scaleExpeditionHeRewards<T extends { highEnergy?: number }>(g: T): T {
+  if (g && typeof g.highEnergy === 'number') {
+    g.highEnergy = Math.max(0, Math.floor(g.highEnergy * EXPEDITION_HE_REWARD_MUL));
+  }
+  return g;
+}
 import { createActionRng, rngInt, rngPick, weightedPick } from './rng';
 import type { BuildingState, CivilizationFocuses } from './types';
 import { getBuildingLevel } from './formulas';
@@ -644,7 +652,7 @@ export function resolveExpeditionV2(params: {
           `Обнаружены залежи. Извлечено: ${amount} ед. ${labels[res]}. ` +
           `Качество: ${massive ? 'аномально высокое' : 'стандартное'}. ` +
           `Модификатор радара: +${(effRadar / 10).toFixed(1)}%.`,
-        resourcesGained: gained,
+        resourcesGained: scaleExpeditionHeRewards(gained),
       };
     }
 
@@ -806,10 +814,10 @@ export function resolveExpeditionV2(params: {
           `Событие в ${sector} не согласуется с локальной причинностью. ` +
           `Телеметрия содержит замкнутые временны́е петли. Отложенный эффект зарегистрирован. ` +
           `Рекомендация: не повышать светимость радара до анализа (Этап 4+).`,
-        resourcesGained: {
+        resourcesGained: scaleExpeditionHeRewards({
           highEnergy: rngInt(rng, 0, 200),
           darkEnergy: rngInt(rng, 0, 80),
-        },
+        }),
       };
 
     default:

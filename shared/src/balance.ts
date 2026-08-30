@@ -22,12 +22,17 @@ export interface BuildingDef {
   stage1Active: boolean;
 }
 
+/** Stage 11 — global HE slowdown (production + passive HE + expedition HE gains). */
+export const HE_PRODUCTION_GLOBAL_MUL = 0.1;
+/** Stage 11 — level curve steepness (costs × this). */
+export const LEVEL_COST_GLOBAL_MUL = 10;
+
 export const BUILDINGS: Record<BuildingId, BuildingDef> = {
   high_energy_collider: {
     id: 'high_energy_collider',
     baseCostHe: 15,
     growth: 1.35,
-    hePerLevel: 0.5,
+    hePerLevel: 0.5, // base; actual rate × HE_PRODUCTION_GLOBAL_MUL (0.1)
     unlockedAtLevel: 1,
     stage1Active: true,
   },
@@ -206,3 +211,6 @@ export const COMBAT_DECEPTION_SENSOR_PENALTY = 15;
 export const COLONIZE_COST_HE = 150;
 export const COLONIZE_COST_FERMIONS = 8;
 export const COLONIZE_MIN_CIV_LEVEL = 3;
+
+/** Stage 11 — expedition HE loot scale (matches production slowdown). */
+export const EXPEDITION_HE_REWARD_MUL = 0.1;

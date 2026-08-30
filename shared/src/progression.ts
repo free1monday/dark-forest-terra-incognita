@@ -1,4 +1,6 @@
 /** Stage 8 — late-game progression (levels 60+, dark energy, galaxy travel). */
+import { LEVEL_COST_GLOBAL_MUL } from './balance';
+
 
 export const DARK_ENERGY_LEVEL_THRESHOLD = 60;
 export const PHYSICS_LAB_LEVEL = 90;
@@ -10,14 +12,15 @@ export const MAX_ACTIVE_PHYSICS_LAWS = 3;
  * Soft-capped for MVP playability while preserving steep late curve.
  */
 export function civilizationLevelCostHe(currentLevel: number): number {
-  if (currentLevel < 1) return 50;
+  // Stage 11: costs × LEVEL_COST_GLOBAL_MUL (~10× slower leveling)
+  const mul = LEVEL_COST_GLOBAL_MUL;
+  if (currentLevel < 1) return Math.floor(50 * mul);
   if (currentLevel < 60) {
-    return Math.floor(50 * Math.pow(1.22, currentLevel - 1));
+    return Math.floor(50 * Math.pow(1.22, currentLevel - 1) * mul);
   }
-  // 60+: steeper but soft-cap for MVP testing (real fantasy would be 1M–10B)
-  const base = Math.floor(50 * Math.pow(1.22, 59)); // cost at 60
+  const base = Math.floor(50 * Math.pow(1.22, 59) * mul);
   const late = Math.floor(base * Math.pow(1.18, currentLevel - 60));
-  return Math.min(50_000_000, Math.max(base, late));
+  return Math.min(500_000_000, Math.max(base, late));
 }
 
 /**
@@ -28,8 +31,8 @@ export function civilizationLevelCostDarkEnergy(currentLevel: number): number {
   if (currentLevel < DARK_ENERGY_LEVEL_THRESHOLD) return 0;
   // level 60->61 needs DE; index = currentLevel - 60
   const step = currentLevel - DARK_ENERGY_LEVEL_THRESHOLD;
-  const raw = Math.floor(100 * Math.pow(1.35, step));
-  return Math.min(2_000_000, Math.max(100, raw));
+  const raw = Math.floor(100 * Math.pow(1.35, step) * LEVEL_COST_GLOBAL_MUL);
+  return Math.min(20_000_000, Math.max(100 * LEVEL_COST_GLOBAL_MUL, raw));
 }
 
 export function civilizationLevelCostDarkMatter(currentLevel: number): number {

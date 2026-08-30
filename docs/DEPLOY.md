@@ -47,14 +47,14 @@ Project → **Settings → Environment Variables** (Production + Preview):
 `vercel-build` делает:
 
 1. `prisma generate`
-2. `prisma migrate deploy` (применяет baseline Postgres; ошибка **не роняет** билд — только WARN в логе)
+2. `prisma db push` (применяет baseline Postgres; ошибка **не роняет** билд — только WARN в логе)
 3. `npm run build` клиента
 
 Если migrate не прошла на билде (нет сети к БД), выполните один раз вручную:
 
 ```bash
 cd server
-DATABASE_URL="postgres://…" npx prisma migrate deploy
+DATABASE_URL="postgres://…" npx prisma db push
 ```
 
 ---
@@ -71,7 +71,7 @@ cp server/.env.example server/.env
 
 # 3) миграции + клиент Prisma
 cd server
-npx prisma migrate deploy   # или: npx prisma migrate dev
+npx prisma db push   # или: npx prisma migrate dev
 npx prisma generate
 npm run dev                 # :4000
 
@@ -151,7 +151,7 @@ If tables are missing after first deploy:
    ```
    https://YOUR_APP.vercel.app/api/init-db?secret=YOUR_INIT_DB_SECRET
    ```
-3. Expect JSON with `tableCount` > 0 and `migrate.ok: true`.
+3. Expect JSON with `tableCount` > 0 and `push.ok: true`.
 4. Optional wipe+recreate:
    ```
    https://YOUR_APP.vercel.app/api/drop-init?secret=YOUR_INIT_DB_SECRET

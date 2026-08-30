@@ -118,26 +118,40 @@ async function listTables(): Promise<string[]> {
   }
 }
 
+/** Clear failed/partial Prisma migration history so P3009 cannot block bootstrap. */
+async function dropPrismaMigrationsTable(): Promise<{ ok: boolean; message: string }> {
+  try {
+    await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "_prisma_migrations" CASCADE;`);
+    return { ok: true, message: 'Dropped _prisma_migrations (if existed)' };
+  } catch (e: unknown) {
+    return {
+      ok: false,
+      message: e instanceof Error ? e.message : 'drop _prisma_migrations failed',
+    };
+  }
+}
+
 export async function dbInitRoutes(app: FastifyInstance) {
   const limit = {
     config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
   };
 
+  /**
+   * First-time / recovery bootstrap for Vercel Postgres.
+   * Uses `prisma db push` (no migration history) after clearing failed `_prisma_migrations`.
+   */
   app.get('/api/init-db', limit, async (request) => {
     const q = request.query as { secret?: string };
     assertInitSecret(q.secret);
 
     const before = await listTables();
-    const migrate = await runPrisma(['migrate', 'deploy']);
-    let push: Awaited<ReturnType<typeof runPrisma>> | null = null;
-    if (!migrate.ok) {
-      push = await runPrisma(['db', 'push', '--accept-data-loss', '--skip-generate']);
-    }
+    const clearMigrations = await dropPrismaMigrationsTable();
+    const push = await runPrisma(['db', 'push', '--accept-data-loss', '--skip-generate']);
     const after = await listTables();
 
     return {
       action: 'init-db',
-      migrate,
+      clearMigrations,
       push,
       tablesBefore: before,
       tablesAfter: after,
@@ -168,17 +182,14 @@ export async function dbInitRoutes(app: FastifyInstance) {
       };
     }
 
-    const migrate = await runPrisma(['migrate', 'deploy']);
-    let push: Awaited<ReturnType<typeof runPrisma>> | null = null;
-    if (!migrate.ok) {
-      push = await runPrisma(['db', 'push', '--accept-data-loss', '--skip-generate']);
-    }
+    const clearMigrations = await dropPrismaMigrationsTable();
+    const push = await runPrisma(['db', 'push', '--accept-data-loss', '--skip-generate']);
     const after = await listTables();
 
     return {
       action: 'drop-init',
       wipe,
-      migrate,
+      clearMigrations,
       push,
       tablesBefore: before,
       tablesAfter: after,

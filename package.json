@@ -13,14 +13,18 @@
     "typecheck:server": "npm run typecheck --prefix server",
     "db:migrate": "npm run db:migrate --prefix server",
     "db:push": "npm run db:push --prefix server",
-    "db:generate": "npm run db:generate --prefix server",
+    "db:generate": "node scripts/ensure-prisma-root.mjs",
     "postinstall": "npm install --prefix client && npm install --prefix server",
-    "vercel-install": "npm install --prefix client && npm install --prefix server && npm install",
-    "vercel-build": "npm run db:generate --prefix server && npm run build --prefix client && node scripts/bundle-api.mjs",
+    "vercel-install": "npm install && npm install --prefix server && npm install --prefix client",
+    "vercel-build": "node scripts/ensure-prisma-root.mjs && npm run build --prefix client && node scripts/bundle-api.mjs",
     "bundle:api": "node scripts/bundle-api.mjs"
   },
   "devDependencies": {
     "@vercel/node": "^5.5.15",
-    "esbuild": "^0.28.2"
+    "esbuild": "^0.28.2",
+    "prisma": "^5.22.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0"
   }
 }

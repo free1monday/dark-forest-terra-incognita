@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import type { FastifyInstance } from 'fastify';
@@ -22,65 +23,140 @@ function assertInitSecret(secret: unknown) {
   }
 }
 
-function resolvePrismaPaths() {
-  const cwd = process.cwd();
+function exists(p: string): boolean {
+  try {
+    return fs.existsSync(p);
+  } catch {
+    return false;
+  }
+}
+
+/** Writable dirs for Vercel sandbox (no real $HOME like /home/sbx_user*). */
+function sandboxEnv(): NodeJS.ProcessEnv {
+  const tmp = process.env.TMPDIR || process.env.TEMP || os.tmpdir() || '/tmp';
+  return {
+    ...process.env,
+    HOME: tmp,
+    USERPROFILE: tmp,
+    TMPDIR: tmp,
+    TEMP: tmp,
+    TMP: tmp,
+    npm_config_cache: path.join(tmp, 'npm-cache'),
+    npm_config_prefix: tmp,
+    PRISMA_CLI_QUERY_ENGINE_TYPE: process.env.PRISMA_CLI_QUERY_ENGINE_TYPE ?? 'library',
+    // Never phone home / download engines in serverless
+    PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: '1',
+  };
+}
+
+function resolveSchemaPath(cwd: string): string | null {
   const candidates = [
-    path.join(cwd, 'server'),
+    path.join(cwd, 'server', 'prisma', 'schema.prisma'),
+    path.join(cwd, 'prisma', 'schema.prisma'),
+    path.join(cwd, '..', 'server', 'prisma', 'schema.prisma'),
+    path.join(cwd, 'api', '..', 'server', 'prisma', 'schema.prisma'),
+  ];
+  for (const c of candidates) {
+    if (exists(c)) return c;
+  }
+  return null;
+}
+
+/**
+ * Locate LOCAL Prisma CLI only — never npx (no network / no $HOME on Vercel).
+ * Prefer `node …/prisma/build/index.js` over shell shims.
+ */
+function resolveLocalPrisma(cwd: string): {
+  cmd: string;
+  baseArgs: string[];
+  found: string[];
+} {
+  const found: string[] = [];
+  const searchRoots = [
     cwd,
-    path.join(cwd, '..', 'server'),
-    // When running from a bundle under /var/task/api, server is sibling
-    path.join(cwd, 'api', '..', 'server'),
-    path.resolve(cwd, '..', 'server'),
+    path.join(cwd, 'server'),
+    path.join(cwd, '..'),
+    path.dirname(cwd),
   ];
 
-  let serverRoot = candidates[0];
-  for (const c of candidates) {
-    if (fs.existsSync(path.join(c, 'prisma', 'schema.prisma'))) {
-      serverRoot = c;
-      break;
+  const tryPairs: Array<{ label: string; cmd: string; baseArgs: string[] }> = [];
+
+  for (const root of searchRoots) {
+    const cliJs = path.join(root, 'node_modules', 'prisma', 'build', 'index.js');
+    const bin = path.join(root, 'node_modules', '.bin', 'prisma');
+    if (exists(cliJs)) {
+      found.push(cliJs);
+      tryPairs.push({
+        label: cliJs,
+        cmd: process.execPath,
+        baseArgs: [cliJs],
+      });
+    }
+    if (exists(bin)) {
+      found.push(bin);
+      tryPairs.push({
+        label: bin,
+        cmd: bin,
+        baseArgs: [],
+      });
     }
   }
 
-  const schema = path.join(serverRoot, 'prisma', 'schema.prisma');
-  const prismaCli = path.join(serverRoot, 'node_modules', 'prisma', 'build', 'index.js');
-  const binPrisma = path.join(serverRoot, 'node_modules', '.bin', 'prisma');
-  const rootBin = path.join(cwd, 'node_modules', '.bin', 'prisma');
-  return { serverRoot, schema, prismaCli, binPrisma, rootBin };
+  if (tryPairs.length === 0) {
+    throw new AppError(
+      'PRISMA_CLI_MISSING',
+      'Локальный Prisma CLI не найден в node_modules (npx отключён на Vercel). Проверьте includeFiles / dependencies.',
+      500
+    );
+  }
+
+  const first = tryPairs[0];
+  return { cmd: first.cmd, baseArgs: first.baseArgs, found };
 }
 
 async function runPrisma(args: string[]) {
-  const { serverRoot, schema, prismaCli, binPrisma, rootBin } = resolvePrismaPaths();
-  const env = { ...process.env };
-
-  let cmd: string;
-  let cmdArgs: string[];
-
-  if (fs.existsSync(binPrisma)) {
-    cmd = binPrisma;
-    cmdArgs = [...args, '--schema', schema];
-  } else if (fs.existsSync(rootBin)) {
-    cmd = rootBin;
-    cmdArgs = [...args, '--schema', schema];
-  } else if (fs.existsSync(prismaCli)) {
-    cmd = process.execPath;
-    cmdArgs = [prismaCli, ...args, '--schema', schema];
-  } else {
-    cmd = 'npx';
-    cmdArgs = ['--yes', 'prisma@5.22.0', ...args, '--schema', schema];
+  const cwd = process.cwd();
+  const schema = resolveSchemaPath(cwd);
+  if (!schema) {
+    return {
+      ok: false as const,
+      cwd,
+      message: 'schema.prisma not found under server/prisma or prisma/',
+      foundCli: [] as string[],
+    };
   }
 
+  let resolved: ReturnType<typeof resolveLocalPrisma>;
   try {
-    const { stdout, stderr } = await execFileAsync(cmd, cmdArgs, {
-      cwd: serverRoot,
+    resolved = resolveLocalPrisma(cwd);
+  } catch (e: unknown) {
+    return {
+      ok: false as const,
+      cwd,
+      schema,
+      message: e instanceof Error ? e.message : 'prisma cli resolve failed',
+      foundCli: [] as string[],
+    };
+  }
+
+  const cmdArgs = [...resolved.baseArgs, ...args, '--schema', schema];
+  const env = sandboxEnv();
+  const workDir = path.dirname(schema); // server/prisma → run from server/
+
+  try {
+    const { stdout, stderr } = await execFileAsync(resolved.cmd, cmdArgs, {
+      cwd: path.dirname(workDir),
       env,
       timeout: 120_000,
       maxBuffer: 4 * 1024 * 1024,
     });
     return {
       ok: true as const,
-      cmd: [cmd, ...cmdArgs].join(' '),
-      serverRoot,
+      cmd: [resolved.cmd, ...cmdArgs].join(' '),
+      cwd,
+      workDir: path.dirname(workDir),
       schema,
+      foundCli: resolved.found,
       stdout: String(stdout ?? '').slice(0, 8000),
       stderr: String(stderr ?? '').slice(0, 4000),
     };
@@ -93,9 +169,11 @@ async function runPrisma(args: string[]) {
     };
     return {
       ok: false as const,
-      cmd: [cmd, ...cmdArgs].join(' '),
-      serverRoot,
+      cmd: [resolved.cmd, ...cmdArgs].join(' '),
+      cwd,
+      workDir: path.dirname(workDir),
       schema,
+      foundCli: resolved.found,
       code: err.code,
       message: err.message ?? 'prisma failed',
       stdout: String(err.stdout ?? '').slice(0, 8000),
@@ -137,7 +215,7 @@ export async function dbInitRoutes(app: FastifyInstance) {
 
   /**
    * First-time / recovery bootstrap for Vercel Postgres.
-   * Uses `prisma db push` (no migration history) after clearing failed `_prisma_migrations`.
+   * Uses local `prisma db push` only (never npx).
    */
   app.get('/api/init-db', limit, async (request) => {
     const q = request.query as { secret?: string };

@@ -10,16 +10,8 @@ function costStr(c: {
   darkEnergy: number;
   darkMatter: number;
   fermions: number;
-}): string {
-  return [
-    c.highEnergy ? `ВЭ ${c.highEnergy}` : null,
-    c.antimatter ? `АМ ${c.antimatter}` : null,
-    c.darkEnergy ? `ТЭ ${c.darkEnergy}` : null,
-    c.darkMatter ? `ТМ ${c.darkMatter}` : null,
-    c.fermions ? `ФМ ${c.fermions}` : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+}) {
+  return formatCostParts(c) ?? '—';
 }
 
 export function CombatPanel() {

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { formatNumber } from '../lib/format';
 import { useGameStore } from '../store/gameStore';
 import { formatCostParts } from './icons/ResourceIcons';
 import styles from './CosmosPanel.module.css';

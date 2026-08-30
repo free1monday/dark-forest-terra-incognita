@@ -1,5 +1,4 @@
 import { formatCostParts } from './icons/ResourceIcons';
-import { formatNumber } from '../lib/format';
 import { useGameStore } from '../store/gameStore';
 import styles from './PhysicsLabPanel.module.css';
 

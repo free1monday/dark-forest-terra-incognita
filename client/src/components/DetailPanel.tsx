@@ -17,7 +17,7 @@ import {
   STAR_LABELS,
 } from '../lib/labels';
 import { useGameStore } from '../store/gameStore';
-import { ResourceCost, formatCostParts } from './icons/ResourceIcons';
+import { ResourceCost } from './icons/ResourceIcons';
 import { BuildingIcon } from './icons/ObjectIcons';
 import styles from './DetailPanel.module.css';
 

@@ -161,3 +161,66 @@
     max-height: 120px;
   }
 }
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.15rem 0.25rem;
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+}
+.crumbSep {
+  color: #64748b;
+  margin: 0 0.15rem;
+}
+.crumbBtn {
+  background: transparent;
+  border: none;
+  color: #7dd3fc;
+  cursor: pointer;
+  padding: 0.1rem 0.25rem;
+  border-radius: 6px;
+  font: inherit;
+}
+.crumbBtn:hover {
+  background: rgba(56, 189, 248, 0.12);
+  text-decoration: underline;
+}
+.levelTag {
+  margin-left: 0.5rem;
+  font-size: 0.72rem;
+}
+.helpOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: rgba(2, 6, 23, 0.72);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+.helpCard {
+  width: min(480px, 100%);
+  background: #0f172a;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 0 28px rgba(56, 189, 248, 0.15);
+}
+.helpCard h3 {
+  margin: 0 0 0.5rem;
+}
+.helpCard ul {
+  margin: 0 0 0.85rem;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #cbd5e1;
+}
+.canvas {
+  cursor: grab;
+}
+.canvas:active {
+  cursor: grabbing;
+}

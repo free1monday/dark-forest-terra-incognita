@@ -361,10 +361,12 @@ export function calculateDefensePower(params: {
   /** GRAVITATIONAL ignores shields. */
   ignoreShields?: boolean;
   evacuationActive?: boolean;
+  /** Stage 11 Tranqlucator stacks */
+  tranqlucatorBonus?: number;
 }): number {
   const s = params.structures;
   const shield = params.ignoreShields ? 0 : s.shieldCapacity;
-  let base = s.defenseMatrix + shield + s.fleetStrength;
+  let base = s.defenseMatrix + shield + s.fleetStrength + (params.tranqlucatorBonus ?? 0);
   const artDef =
     (params.artifacts?.darkMatterProductionBonus ?? 0) * 0.4 +
     (params.artifacts?.allProductionBonus ?? 0) * 0.2;

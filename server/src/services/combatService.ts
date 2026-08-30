@@ -37,6 +37,7 @@ import {
 } from '@shared';
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/errors.js';
+import { tranqlucatorDefenseBonus } from './weaponService.js';
 import {
   anomalyTypesOf,
   artifactKeysOf,
@@ -493,12 +494,22 @@ async function resolveActionInTx(
   }
 
   const targetEvac = contact.target?.evacuationActive ?? false;
+  let tqlBonus = 0;
+  if (contact.targetCivilizationId) {
+    const tw = await tx.weapon.findMany({
+      where: { civilizationId: contact.targetCivilizationId, status: 'READY', type: 'TRANQLUCATOR' },
+      select: { type: true, status: true },
+    });
+    tqlBonus = tranqlucatorDefenseBonus(tw);
+    // Auto-fire flavor: high bonus already applied; journal on attacker side below if bonus > 0
+  }
   const defensePower = calculateDefensePower({
     targetLevel,
     structures,
     artifacts: arts,
     ignoreShields,
     evacuationActive: targetEvac,
+    tranqlucatorBonus: tqlBonus,
   });
 
   const resolved = resolveCombat({

@@ -15,6 +15,7 @@ import { adminRoutes } from './routes/admin.js';
 import { debugRoutes } from './routes/debug.js';
 import { dbInitRoutes } from './routes/dbInit.js';
 import { universeRoutes } from './routes/universe.js';
+import { weaponRoutes } from './routes/weapons.js';
 import { isAppError } from './utils/errors.js';
 
 export async function buildApp() {
@@ -100,6 +101,7 @@ export async function buildApp() {
   await app.register(debugRoutes);
   await app.register(dbInitRoutes);
   await app.register(universeRoutes);
+  await app.register(weaponRoutes);
 
   return app;
 }

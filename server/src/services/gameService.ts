@@ -145,7 +145,7 @@ const civInclude = {
   },
 } satisfies Prisma.CivilizationInclude;
 
-async function loadCivForUser(userId: string): Promise<CivFull | null> {
+export async function loadCivForUser(userId: string): Promise<CivFull | null> {
   return prisma.civilization.findUnique({
     where: { userId },
     include: civInclude,
@@ -232,7 +232,7 @@ function reloadInclude() {
   };
 }
 
-async function catchUpInTx(
+export async function catchUpInTx(
   tx: Prisma.TransactionClient,
   civId: string,
   now = new Date()

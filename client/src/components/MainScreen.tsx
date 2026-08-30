@@ -28,6 +28,7 @@ import { UniverseMap } from './universe/UniverseMap';
 import { Bridge } from './universe/Bridge';
 import { SolarSystemView } from './universe/SolarSystemView';
 import { CivilizationProfile } from './universe/CivilizationProfile';
+import { WeaponsPanel } from './WeaponsPanel';
 import styles from './MainScreen.module.css';
 
 export function MainScreen() {
@@ -36,6 +37,7 @@ export function MainScreen() {
   const [bridgeOpen, setBridgeOpen] = useState(false);
   const [systemOpen, setSystemOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [weaponsOpen, setWeaponsOpen] = useState(false);
   useEventToasts();
   const civ = useGameStore((s) => s.state?.civilization);
   const resources = useGameStore((s) => s.state?.resources);
@@ -129,6 +131,9 @@ export function MainScreen() {
           <button type="button" className="btn btn-sm" onClick={() => setBridgeOpen(true)}>
             Рубка
           </button>
+          <button type="button" className="btn btn-sm" onClick={() => setWeaponsOpen(true)}>
+            Оружие
+          </button>
           <button type="button" className="btn btn-sm" onClick={() => setSystemOpen(true)}>
             Система
           </button>
@@ -216,6 +221,7 @@ export function MainScreen() {
         onColonized={() => void useGameStore.getState().refresh()}
       />
       <CivilizationProfile open={profileOpen} onClose={() => setProfileOpen(false)} />
+      <WeaponsPanel open={weaponsOpen} onClose={() => setWeaponsOpen(false)} />
 
       <footer className={styles.footer}>
         <span className="mono muted">

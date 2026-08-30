@@ -86,6 +86,7 @@ model Civilization {
   homeSolarSystem     SolarSystem?  @relation("CivHomeSystem", fields: [homeSolarSystemId], references: [id], onDelete: SetNull)
   ownedPlanets        Planet[]      @relation("PlanetOwner")
   solarSystems        SolarSystem[] @relation("SystemOwner")
+  weapons             Weapon[]
   buildings           Building[]
   expeditions         Expedition[]
   journal             JournalEvent[]
@@ -385,4 +386,21 @@ model Planet {
   @@unique([solarSystemId, planetKey])
   @@index([solarSystemId])
   @@index([ownerCivilizationId])
+}
+
+/// Stage 11 — strategic weapons
+model Weapon {
+  id             String       @id @default(cuid())
+  civilizationId String
+  civilization   Civilization @relation(fields: [civilizationId], references: [id], onDelete: Cascade)
+  type           String
+  status         String       @default("BUILDING") // BUILDING | READY | USED | DESTROYED
+  startedAt      DateTime     @default(now())
+  readyAt        DateTime
+  usedAt         DateTime?
+  targetContactId String?
+  createdAt      DateTime     @default(now())
+
+  @@index([civilizationId, status])
+  @@index([civilizationId, type])
 }

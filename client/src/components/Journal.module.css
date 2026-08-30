@@ -121,3 +121,13 @@
   color: var(--text-dim);
   line-height: 1.5;
 }
+
+.casus {
+  border-color: rgba(250, 204, 21, 0.45);
+  background: linear-gradient(120deg, rgba(250, 204, 21, 0.08), rgba(15, 23, 42, 0.4));
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.08);
+}
+.casus .badge {
+  background: rgba(250, 204, 21, 0.2);
+  color: #fde68a;
+}

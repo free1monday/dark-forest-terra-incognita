@@ -17,6 +17,8 @@ const TYPE_LABEL: Record<string, string> = {
   signal: 'SIG',
   boost: 'BST',
   paradox: 'PRX',
+  CASUS: '🎭',
+  casus: '🎭',
 };
 
 export function Journal() {
@@ -36,7 +38,7 @@ export function Journal() {
           <div className={styles.empty}>Нет записей. Ожидание телеметрии…</div>
         )}
         {journal.map((e) => (
-          <article key={e.id} className={styles.entry} data-type={e.type}>
+          <article key={e.id} className={`${styles.entry} ${e.type === 'CASUS' || e.type === 'casus' ? styles.casus : ''}`} data-type={e.type}>
             <header className={styles.head}>
               <span className={`${styles.badge} mono`}>{TYPE_LABEL[e.type] ?? e.type}</span>
               <span className={`${styles.time} mono`}>

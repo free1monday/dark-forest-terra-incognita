@@ -23,3 +23,4 @@ export * from './universe/solarSystem';
 export * from './universe/galaxy';
 export * from './universe/worldMap';
 export * from './combat/weapons';
+export * from './universe/casus';

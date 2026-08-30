@@ -7,6 +7,7 @@ import {
 } from './artifacts';
 import type { BuildingId, ResourceId } from './constants';
 import { EXPEDITION_HE_REWARD_MUL } from './balance';
+import { rollCasus, type CasusDef } from './universe/casus';
 
 function scaleExpeditionHeRewards<T extends { highEnergy?: number }>(g: T): T {
   if (g && typeof g.highEnergy === 'number') {
@@ -535,9 +536,11 @@ export interface ExpeditionResolutionV2 {
   confidence?: number;
   /** Stage 4: create Contact record on server */
   createContact?: boolean;
+  /** Stage 11 flavor-only easter egg */
+  casus?: CasusDef;
 }
 
-export function resolveExpeditionV2(params: {
+function resolveExpeditionV2Core(params: {
   civSeed: string;
   nonce: number;
   expeditionType: ExpeditionTypeId;
@@ -829,6 +832,32 @@ export function resolveExpeditionV2(params: {
         body: `Данные сектора ${sector} повреждены. Повторный анализ рекомендован.`,
       };
   }
+}
+
+export function resolveExpeditionV2(params: {
+  civSeed: string;
+  nonce: number;
+  expeditionType: ExpeditionTypeId;
+  civLevel: number;
+  focuses: CivilizationFocuses;
+  buildings: BuildingState[];
+  baseRadar: number;
+  artifactKeys: string[];
+  anomalyTypes: DiscoveredAnomalyType[];
+  expeditionId: string;
+}): ExpeditionResolutionV2 {
+  const result = resolveExpeditionV2Core(params);
+  const casus = rollCasus(params.civSeed, params.nonce, params.expeditionType);
+  if (casus) {
+    result.casus = casus;
+    result.body =
+      result.body +
+      `\n\n🎭 Казус: ${casus.titleRu}. ${casus.bodyRu}`;
+    if (result.journalStyle === 'normal') {
+      result.journalStyle = 'normal';
+    }
+  }
+  return result;
 }
 
 function rarityLabel(r: ArtifactRarity): string {

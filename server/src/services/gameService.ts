@@ -603,6 +603,13 @@ async function completeExpeditionInTx(
       outcomeType: result.outcomeType,
       expeditionType,
     });
+  if ((result as { casus?: { id: string; titleRu: string; bodyRu: string } }).casus) {
+    const casus = (result as { casus: { id: string; titleRu: string; bodyRu: string } }).casus;
+    await addJournal(tx, civ.id, 'CASUS', `🎭 ${casus.titleRu}`, casus.bodyRu, {
+      casusId: casus.id,
+    });
+  }
+
   }
 }
 

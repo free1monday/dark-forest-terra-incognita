@@ -21,10 +21,10 @@
   },
   "devDependencies": {
     "@vercel/node": "^5.5.15",
-    "esbuild": "^0.28.2",
-    "prisma": "^5.22.0"
+    "esbuild": "^0.28.2"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0"
+    "@prisma/client": "^5.22.0",
+    "prisma": "^5.22.0"
   }
 }

@@ -17,6 +17,7 @@ import {
   STAR_LABELS,
 } from '../lib/labels';
 import { useGameStore } from '../store/gameStore';
+import { ResourceCost, formatCostParts } from './icons/ResourceIcons';
 import styles from './DetailPanel.module.css';
 
 export function DetailPanel() {
@@ -113,7 +114,7 @@ export function DetailPanel() {
           )}
           <div>
             <dt>Стоимость улучшения</dt>
-            <dd className="mono">{formatNumber(cost, 0)} ВЭ</dd>
+            <dd><ResourceCost id="highEnergy" amount={cost} /></dd>
           </div>
           <div>
             <dt>Разблокировка</dt>
@@ -183,8 +184,10 @@ export function DetailPanel() {
           <div>
             <dt>Стоимость ур. {civ.level + 1}</dt>
             <dd className="mono">
-              {formatNumber(nextCost, 0)} ВЭ
-              {nextDe > 0 ? ` + ${formatNumber(nextDe, 0)} ТЭ` : ''}
+              <span style={{ display: 'inline-flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                <ResourceCost id="highEnergy" amount={nextCost} />
+                {nextDe > 0 ? <ResourceCost id="darkEnergy" amount={nextDe} /> : null}
+              </span>
             </dd>
           </div>
           {civ.level < 60 && (

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { formatNumber } from '../lib/format';
 import { useGameStore } from '../store/gameStore';
+import { formatCostParts } from './icons/ResourceIcons';
 import styles from './CosmosPanel.module.css';
 
 export function CosmosPanel() {
@@ -53,8 +54,7 @@ export function CosmosPanel() {
             сбрасывается.
           </p>
           <div className={styles.cost}>
-            Стоимость: ФМ {formatNumber(gt.cost.fermions, 0)} · ТЭ{' '}
-            {formatNumber(gt.cost.darkEnergy, 0)} · ВЭ {formatNumber(gt.cost.highEnergy, 0)}
+            Стоимость: {formatCostParts(gt.cost)}
           </div>
           <div className="muted" style={{ fontSize: '0.75rem', marginTop: 6 }}>
             Длительность ~{gt.durationSec} с · доступ с ур. 80

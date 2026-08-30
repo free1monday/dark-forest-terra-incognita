@@ -1,4 +1,5 @@
 import { civilizationLevelCostHe, formatPopulation } from '@shared';
+import { ResourceCost } from './icons/ResourceIcons';
 import { formatNumber } from '../lib/format';
 import { useAuthStore } from '../store/authStore';
 import { useState } from 'react';
@@ -65,14 +66,7 @@ export function MainScreen() {
     civ.level < 100 &&
     !actionLoading;
 
-  const levelTitle =
-    nextDe > 0
-      ? `Стоимость: ${formatNumber(nextCost, 0)} ВЭ + ${formatNumber(nextDe, 0)} ТЭ`
-      : `Стоимость: ${formatNumber(nextCost, 0)} ВЭ`;
-  const levelLabel =
-    nextDe > 0
-      ? `Ур. ↑ (${formatNumber(nextCost, 0)} ВЭ + ${formatNumber(nextDe, 0)} ТЭ)`
-      : `Ур. ↑ (${formatNumber(nextCost, 0)} ВЭ)`;
+  const levelTitle = 'Стоимость повышения уровня';
 
   const onLogout = () => {
     clearGame();
@@ -168,7 +162,14 @@ export function MainScreen() {
             onClick={() => void levelUp()}
             title={levelTitle}
           >
-            {levelLabel}
+            Ур. ↑{' '}
+            <ResourceCost id="highEnergy" amount={nextCost} />
+            {nextDe > 0 ? (
+              <>
+                {' '}
+                <ResourceCost id="darkEnergy" amount={nextDe} />
+              </>
+            ) : null}
           </button>
           <button type="button" className="btn btn-ghost btn-sm" onClick={onLogout}>
             Выйти

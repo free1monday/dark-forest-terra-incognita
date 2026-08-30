@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { formatNumber } from '../lib/format';
 import { useGameStore } from '../store/gameStore';
+import { formatCostParts } from './icons/ResourceIcons';
 import styles from './CombatPanel.module.css';
 
 function costStr(c: {

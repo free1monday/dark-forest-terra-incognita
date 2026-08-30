@@ -3,6 +3,7 @@ import type { BuildingId } from '@shared';
 import { formatNumber } from '../lib/format';
 import { BUILDING_LABELS } from '../lib/labels';
 import { useGameStore } from '../store/gameStore';
+import { ResourceCost } from './icons/ResourceIcons';
 import styles from './BuildingsPanel.module.css';
 
 function levelOf(
@@ -55,7 +56,7 @@ export function BuildingsPanel() {
                 <div className={styles.sub}>
                   Уровень <strong className="mono">{level}</strong>
                   <span className="muted"> · </span>
-                  след. <span className="mono">{formatNumber(cost, 0)} ВЭ</span>
+                  след. <ResourceCost id="highEnergy" amount={cost} />
                 </div>
               </div>
               <button

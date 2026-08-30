@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { ExpeditionTypeId } from '@shared';
 import { formatEta, formatNumber } from '../lib/format';
 import { useGameStore } from '../store/gameStore';
+import { formatCostParts } from './icons/ResourceIcons';
 import styles from './ExpeditionPanel.module.css';
 
 export function ExpeditionPanel() {
@@ -60,13 +61,7 @@ export function ExpeditionPanel() {
       <div className={styles.grid}>
         {catalog.map((item) => {
           const locked = !item.unlocked || active || actionLoading;
-          const costParts = [
-            item.cost.highEnergy ? `${formatNumber(item.cost.highEnergy, 0)} ВЭ` : null,
-            item.cost.antimatter ? `${formatNumber(item.cost.antimatter, 0)} АМ` : null,
-            item.cost.darkEnergy ? `${formatNumber(item.cost.darkEnergy, 0)} ТЭ` : null,
-            item.cost.darkMatter ? `${formatNumber(item.cost.darkMatter, 0)} ТМ` : null,
-            item.cost.fermions ? `${formatNumber(item.cost.fermions, 0)} ФМ` : null,
-          ].filter(Boolean);
+          const costNode = formatCostParts(item.cost);
 
           return (
             <div
@@ -77,7 +72,7 @@ export function ExpeditionPanel() {
               <p className={styles.desc}>{item.description}</p>
               <div className={styles.meta}>
                 <div>
-                  Стоимость: <span className="mono">{costParts.join(' + ') || '—'}</span>
+                  Стоимость: {costNode || '—'}
                 </div>
                 <div>
                   ~{formatNumber(item.durationSecEstimate, 0)} с · ур. {item.minCivLevel}+

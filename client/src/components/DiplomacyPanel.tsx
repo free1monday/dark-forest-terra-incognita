@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { formatNumber } from '../lib/format';
 import { useGameStore } from '../store/gameStore';
+import { formatCostParts } from './icons/ResourceIcons';
 import styles from './DiplomacyPanel.module.css';
 
 function formatEta(sec: number): string {
@@ -134,18 +135,17 @@ export function DiplomacyPanel() {
               onChange={(e) => setEncrypt(e.target.checked)}
               disabled={thread.status !== 'active'}
             />
-            Шифрование канала (+ТМ, ниже signalExposure)
+            Шифрование канала (+ТМ иконка, ниже signalExposure)
           </label>
           <div className={styles.cards}>
             {thread.availableCards.map((card) => {
               const cost = card.cost;
-              const costStr = [
-                cost.highEnergy ? `ВЭ ${cost.highEnergy}` : null,
-                cost.antimatter ? `АМ ${cost.antimatter}` : null,
-                cost.darkMatter || (encrypt && card.canEncrypt) ? `ТМ ${encrypt && card.canEncrypt ? 15 : cost.darkMatter}` : null,
-              ]
-                .filter(Boolean)
-                .join(' · ') || 'бесплатно';
+              const costNode =
+                formatCostParts({
+                  highEnergy: cost.highEnergy,
+                  antimatter: cost.antimatter,
+                  darkMatter: encrypt && card.canEncrypt ? Math.max(15, cost.darkMatter || 0) : cost.darkMatter,
+                }) || 'бесплатно';
               return (
                 <button
                   key={card.type}
@@ -157,7 +157,7 @@ export function DiplomacyPanel() {
                 >
                   <span className={styles.cardName}>{card.name}</span>
                   <span className={styles.cardDesc}>{card.description}</span>
-                  <span className={styles.cardCost}>{costStr}</span>
+                  <span className={styles.cardCost}>{costNode}</span>
                   {!card.unlocked && card.reasons[0] && (
                     <span className={styles.cardReasons}>{card.reasons[0]}</span>
                   )}

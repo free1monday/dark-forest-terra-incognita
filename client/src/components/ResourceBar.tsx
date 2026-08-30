@@ -3,6 +3,7 @@ import { formatNumber, formatRate } from '../lib/format';
 import { AnimatedNumber } from './AnimatedNumber';
 import { RESOURCE_LABELS } from '../lib/labels';
 import { useGameStore } from '../store/gameStore';
+import { ResourceIcon } from './icons/ResourceIcons';
 import styles from './ResourceBar.module.css';
 
 export function ResourceBar() {
@@ -34,7 +35,8 @@ export function ResourceBar() {
               }${id === 'darkEnergy' && dePerSec > 0 ? `\nПроизводство: ${formatRate(dePerSec)}` : ''}`}
           >
             <div className={styles.name}>
-              {meta.name}
+              <ResourceIcon id={id} />
+              <span>{meta.name}</span>
               {locked && <span className="tag">блок</span>}
             </div>
             <div className={styles.value}>

@@ -1,4 +1,4 @@
-import { civilizationLevelCostHe } from '@shared';
+import { civilizationLevelCostHe, formatPopulation } from '@shared';
 import { formatNumber } from '../lib/format';
 import { useAuthStore } from '../store/authStore';
 import { useState } from 'react';
@@ -23,10 +23,18 @@ import { PremiumPanel } from './PremiumPanel';
 import { ResourceBar } from './ResourceBar';
 import { Slogan } from './Slogan';
 import { SystemPanel } from './SystemPanel';
+import { UniverseMap } from './universe/UniverseMap';
+import { Bridge } from './universe/Bridge';
+import { SolarSystemView } from './universe/SolarSystemView';
+import { CivilizationProfile } from './universe/CivilizationProfile';
 import styles from './MainScreen.module.css';
 
 export function MainScreen() {
   const [adminOpen, setAdminOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
+  const [bridgeOpen, setBridgeOpen] = useState(false);
+  const [systemOpen, setSystemOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   useEventToasts();
   const civ = useGameStore((s) => s.state?.civilization);
   const resources = useGameStore((s) => s.state?.resources);
@@ -92,6 +100,12 @@ export function MainScreen() {
           <span className="tag tag-gold" title="Процветание">
             ★ {formatNumber(civ.prosperityScore, 0)}
           </span>
+          <span className="tag" title="Население">
+            {formatPopulation(civ.population ?? 1_000_000)}
+          </span>
+          <span className="tag" title={civ.speciesLabel ?? 'Раса'}>
+            {civ.speciesLabel ?? civ.species ?? '—'}
+          </span>
           <span className="tag" title="Эфирные кредиты">
             ◆ {premiumCredits ?? user?.premiumCredits ?? 0}
           </span>
@@ -114,6 +128,23 @@ export function MainScreen() {
           </button>
           <button type="button" className="btn btn-sm btn-premium" onClick={() => openShop()}>
             Магазин
+          </button>
+          <button type="button" className="btn btn-sm" onClick={() => setMapOpen(true)}>
+            Вселенная
+          </button>
+          <button type="button" className="btn btn-sm" onClick={() => setBridgeOpen(true)}>
+            Рубка
+          </button>
+          <button type="button" className="btn btn-sm" onClick={() => setSystemOpen(true)}>
+            Система
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm"
+            onClick={() => setProfileOpen(true)}
+            title="Раса, режим, население"
+          >
+            Профиль
           </button>
           {isAdmin && (
             <button type="button" className="btn btn-sm" onClick={() => setAdminOpen(true)}>
@@ -176,11 +207,19 @@ export function MainScreen() {
       <PhysicsLabPanel />
       <CosmosPanel />
       <AdminPanel open={adminOpen} onClose={() => setAdminOpen(false)} />
+      <UniverseMap open={mapOpen} onClose={() => setMapOpen(false)} />
+      <Bridge open={bridgeOpen} onClose={() => setBridgeOpen(false)} />
+      <SolarSystemView
+        open={systemOpen}
+        onClose={() => setSystemOpen(false)}
+        onColonized={() => void useGameStore.getState().refresh()}
+      />
+      <CivilizationProfile open={profileOpen} onClose={() => setProfileOpen(false)} />
 
       <footer className={styles.footer}>
         <span className="mono muted">
-          Этап 9 · launch · sid {civ.seed} · prosperity {civ.prosperityScore} · exposure{' '}
-          {signalExposure?.toFixed(3)}
+          Этап 10 · sid {civ.seed} · pop {formatPopulation(civ.population ?? 0)} · prosperity{' '}
+          {civ.prosperityScore} · exposure {signalExposure?.toFixed(3)}
           {civ.level >= 90 ? ' · glitch' : ''}
         </span>
       </footer>

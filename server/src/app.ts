@@ -14,6 +14,7 @@ import { lateGameRoutes } from './routes/lateGame.js';
 import { adminRoutes } from './routes/admin.js';
 import { debugRoutes } from './routes/debug.js';
 import { dbInitRoutes } from './routes/dbInit.js';
+import { universeRoutes } from './routes/universe.js';
 import { isAppError } from './utils/errors.js';
 
 export async function buildApp() {
@@ -98,6 +99,7 @@ export async function buildApp() {
   await app.register(adminRoutes);
   await app.register(debugRoutes);
   await app.register(dbInitRoutes);
+  await app.register(universeRoutes);
 
   return app;
 }

@@ -29,7 +29,11 @@ interface GameStore {
   closeDiplomacy: () => void;
 
   loadState: () => Promise<GameState | null>;
-  createCivilization: (name: string, focuses: CivilizationFocuses) => Promise<void>;
+  createCivilization: (
+    name: string,
+    focuses: CivilizationFocuses,
+    opts?: { species?: string; politicalRegime?: string; governmentForm?: string }
+  ) => Promise<void>;
   upgradeBuilding: (id: BuildingId) => Promise<void>;
   levelUp: () => Promise<void>;
   startExpedition: (type: ExpeditionTypeId) => Promise<void>;
@@ -156,10 +160,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
   },
 
-  createCivilization: async (name, focuses) => {
+  createCivilization: async (name, focuses, opts) => {
     set({ actionLoading: true, error: null });
     try {
-      const res = await gameApi.createCivilization(name, focuses);
+      const res = await gameApi.createCivilization(name, focuses, opts);
       set({
         state: res.state,
         actionLoading: false,

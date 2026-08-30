@@ -126,3 +126,10 @@ docker compose up --build
 - Seeded RNG; integer resources.
 - RU UI / EN code.
 - Async combat & diplomacy (no attacker online required for defense resolution).
+
+## Этап 10 — Вселенная, Рубка, расы
+
+- Карта Вселенной (кнопка **Вселенная**): слои L0–L3, процедурная генерация из seed
+- **Рубка**: дипломатический хаб с анимированным космосом
+- Расы / режимы / население / колонии; солнечная система и планеты
+- API: `/api/universe/*`, `colonize-planet`, `change-regime`

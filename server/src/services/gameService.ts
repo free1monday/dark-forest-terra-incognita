@@ -36,6 +36,24 @@ import {
   type ExpeditionTypeId,
   type GameState,
   type ResourceState,
+  generateSolarSystem,
+  STARTING_POPULATION,
+  SPECIES_IDS,
+  defaultGovernment,
+  isSpeciesId,
+  isPoliticalRegimeId,
+  type SpeciesId,
+  type PoliticalRegimeId,
+  populationDelta,
+  COLONIZE_COST_HE,
+  COLONIZE_COST_FERMIONS,
+  COLONIZE_MIN_CIV_LEVEL,
+  canColonizePlanet,
+  REGIME_CHANGE_COST_HE,
+  REGIME_CHANGE_COST_FERMIONS,
+  PARLIAMENT_MIN_LEVEL,
+  type PlanetTypeId,
+  type AtmosphereId,
 } from '@shared';
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/errors.js';
@@ -295,6 +313,24 @@ async function catchUpInTx(
         highEnergyMilliRem: tick.highEnergyMilliRemainder,
         totalHighEnergyMined: newMined,
         prosperityScore: prosperity,
+        population: BigInt(
+          Math.max(
+            0,
+            Number((civ as { population?: bigint | number }).population ?? STARTING_POPULATION) +
+              populationDelta({
+                population: Number((civ as { population?: bigint | number }).population ?? STARTING_POPULATION),
+                colonies: Number((civ as { colonies?: number }).colonies ?? 1),
+                civLevel: civ.level,
+                highEnergy: tick.resources.highEnergy,
+                highEnergyCapacity: caps.highEnergy,
+                species: ((civ as { species?: string }).species ?? 'HUMAN') as SpeciesId,
+                regime: ((civ as { politicalRegime?: string }).politicalRegime ??
+                  'DEMOCRACY') as PoliticalRegimeId,
+                infrastructureScore: buildingStates.reduce((s, b) => s + b.level, 0),
+                seconds,
+              })
+          )
+        ),
       },
     });
   }
@@ -612,6 +648,22 @@ export async function createCivilization(
   const world = generateWorld(seed, focuses);
   const now = new Date();
 
+  const speciesRaw = (input as { species?: string }).species;
+  const species: SpeciesId = isSpeciesId(speciesRaw)
+    ? speciesRaw
+    : SPECIES_IDS[Math.abs(seed.split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % SPECIES_IDS.length]!;
+  const regimeRaw = (input as { politicalRegime?: string }).politicalRegime;
+  const politicalRegime: PoliticalRegimeId = isPoliticalRegimeId(regimeRaw)
+    ? regimeRaw
+    : 'DEMOCRACY';
+  const governmentForm: string =
+    typeof (input as { governmentForm?: string }).governmentForm === 'string' &&
+    (input as { governmentForm?: string }).governmentForm
+      ? String((input as { governmentForm: string }).governmentForm)
+      : defaultGovernment(species);
+  const sol = generateSolarSystem(seed, world.systemName);
+
+
   const buildingData = BUILDING_ORDER.map((buildingType) => ({
     buildingType,
     level: buildingType === 'high_energy_collider' ? 1 : 0,
@@ -656,6 +708,11 @@ export async function createCivilization(
         riskLevel: focuses.riskLevel,
         lastTickAt: now,
         has4DRiftAccess: false,
+        species,
+        politicalRegime,
+        governmentForm,
+        population: BigInt(STARTING_POPULATION),
+        colonies: 1,
         resources: {
           create: {
             highEnergy: STARTING_HIGH_ENERGY,
@@ -674,14 +731,63 @@ export async function createCivilization(
       },
     });
 
+    const system = await tx.solarSystem.create({
+      data: {
+        seed: sol.seed,
+        name: sol.name,
+        starClass: sol.star.class,
+        starTemperature: sol.star.temperature,
+        starLuminosity: sol.star.luminosity,
+        starMass: sol.star.mass,
+        starAgeGyr: sol.star.ageGyr,
+        starColor: sol.star.color,
+        ownerCivilizationId: created.id,
+        planets: {
+          create: sol.planets.map((pl) => ({
+            planetKey: pl.key,
+            indexInSystem: pl.index,
+            name: pl.isHomeworld ? world.mainPlanetName : pl.name,
+            type: pl.type,
+            atmosphere: pl.atmosphere,
+            gravity: pl.gravity,
+            moons: pl.moons,
+            cosmicDust: pl.cosmicDust,
+            radiation: pl.radiation,
+            temperatureDay: pl.temperatureDay,
+            temperatureNight: pl.temperatureNight,
+            resourcesJson: JSON.stringify(pl.resources),
+            orbitRadius: pl.orbitRadius,
+            hue: pl.hue,
+            isHomeworld: pl.isHomeworld,
+            colonized: pl.isHomeworld,
+            ownerCivilizationId: pl.isHomeworld ? created.id : null,
+          })),
+        },
+      },
+      include: { planets: true },
+    });
+    const homeDb = system.planets.find((x) => x.isHomeworld) ?? system.planets[0]!;
+    await tx.civilization.update({
+      where: { id: created.id },
+      data: {
+        homeSolarSystemId: system.id,
+        homePlanetId: homeDb.id,
+        mainPlanetName: homeDb.name,
+        mainPlanetType: homeDb.type,
+        systemName: system.name,
+      },
+    });
+
     await addJournal(
       tx,
       created.id,
       'system',
       'Цивилизация основана',
-      `Сид: ${seed}. Локация: ${world.galaxyName} / ${world.sectorName} / ${world.systemName}. ` +
+      `Сид: ${seed}. Раса: ${species}. Режим: ${politicalRegime}. ` +
+        `Локация: ${world.galaxyName} / ${world.sectorName} / ${system.name}. ` +
         `Великая структура: ${world.greatStructureName}. ` +
-        `Радар/Локация: ${world.radarQuality}. Статус окрестностей: Терра Инкогнита.`
+        `Население: ${STARTING_POPULATION}. Родной мир: ${homeDb.name}. ` +
+        `Радар: ${world.radarQuality}. Статус окрестностей: Терра Инкогнита.`
     );
     await addJournal(
       tx,
@@ -1248,3 +1354,130 @@ export async function debugSimulateDetectionOnUs(userId: string): Promise<GameSt
 // silence unused BASE_CAPACITY import if any
 void BASE_CAPACITY;
 void highEnergyCapacity;
+
+
+export async function colonizePlanet(userId: string, planetId: string): Promise<GameState> {
+  invalidateStateCache();
+  const now = new Date();
+
+  const civ = await prisma.$transaction(async (tx) => {
+    let c = await catchUpInTx(tx, (await loadCivForUser(userId))!.id, now);
+    if (!c) throw new AppError('CIV_NOT_FOUND', 'Цивилизация не найдена', 404);
+    if (c.level < COLONIZE_MIN_CIV_LEVEL) {
+      throw new AppError(
+        'LEVEL_LOW',
+        `Колонизация доступна с уровня ${COLONIZE_MIN_CIV_LEVEL}`,
+        400
+      );
+    }
+    const planet = await tx.planet.findUnique({ where: { id: planetId } });
+    if (!planet) throw new AppError('PLANET_NOT_FOUND', 'Планета не найдена', 404);
+
+    const system = await tx.solarSystem.findUnique({ where: { id: planet.solarSystemId } });
+    if (!system || system.ownerCivilizationId !== c.id) {
+      throw new AppError('FORBIDDEN', 'Система не принадлежит вам', 403);
+    }
+    if (planet.colonized || planet.ownerCivilizationId) {
+      throw new AppError('ALREADY_COLONIZED', 'Планета уже колонизирована', 409);
+    }
+    const check = canColonizePlanet(
+      {
+        type: planet.type as PlanetTypeId,
+        atmosphere: planet.atmosphere as AtmosphereId,
+        gravity: planet.gravity,
+        radiation: planet.radiation as 'MINIMAL' | 'MODERATE' | 'HIGH' | 'LETHAL',
+        isHomeworld: planet.isHomeworld,
+      },
+      false
+    );
+    if (!check.ok) {
+      throw new AppError('CANNOT_COLONIZE', check.reasons.join('; ') || 'Нельзя колонизировать', 400);
+    }
+    if (!c.resources) throw new AppError('CIV_NOT_FOUND', 'Ресурсы не найдены', 404);
+    if (c.resources.highEnergy < COLONIZE_COST_HE || c.resources.fermions < COLONIZE_COST_FERMIONS) {
+      throw new AppError(
+        'INSUFFICIENT_RESOURCES',
+        `Нужно ${COLONIZE_COST_HE} ВЭ и ${COLONIZE_COST_FERMIONS} фермионов`,
+        400
+      );
+    }
+
+    await tx.resourceState.update({
+      where: { civilizationId: c.id },
+      data: {
+        highEnergy: c.resources.highEnergy - COLONIZE_COST_HE,
+        fermions: c.resources.fermions - COLONIZE_COST_FERMIONS,
+      },
+    });
+    await tx.planet.update({
+      where: { id: planet.id },
+      data: { colonized: true, ownerCivilizationId: c.id },
+    });
+    const colonies = Number((c as { colonies?: number }).colonies ?? 1) + 1;
+    await tx.civilization.update({
+      where: { id: c.id },
+      data: { colonies },
+    });
+    await addJournal(
+      tx,
+      c.id,
+      'system',
+      'Колония основана',
+      `Планета ${planet.name} колонизирована. Колоний: ${colonies}.`
+    );
+    return catchUpInTx(tx, c.id, now);
+  });
+
+  return toGameState(civ);
+}
+
+export async function changePoliticalRegime(
+  userId: string,
+  regime: string
+): Promise<GameState> {
+  invalidateStateCache();
+  if (!isPoliticalRegimeId(regime)) {
+    throw new AppError('INVALID_REGIME', 'Неизвестный политический режим', 400);
+  }
+  const now = new Date();
+  const civ = await prisma.$transaction(async (tx) => {
+    const loaded = await loadCivForUser(userId);
+    if (!loaded) throw new AppError('CIV_NOT_FOUND', 'Цивилизация не найдена', 404);
+    let c = await catchUpInTx(tx, loaded.id, now);
+    const research = c.buildings.find((b) => b.buildingType === 'research_node');
+    if (!research || research.level < PARLIAMENT_MIN_LEVEL) {
+      throw new AppError(
+        'PARLIAMENT_LOCKED',
+        `Нужен узел исследований ур. ${PARLIAMENT_MIN_LEVEL}+ (Парламент)`,
+        400
+      );
+    }
+    if (!c.resources) throw new AppError('CIV_NOT_FOUND', 'Ресурсы не найдены', 404);
+    if (
+      c.resources.highEnergy < REGIME_CHANGE_COST_HE ||
+      c.resources.fermions < REGIME_CHANGE_COST_FERMIONS
+    ) {
+      throw new AppError('INSUFFICIENT_RESOURCES', 'Недостаточно ресурсов для смены режима', 400);
+    }
+    await tx.resourceState.update({
+      where: { civilizationId: c.id },
+      data: {
+        highEnergy: c.resources.highEnergy - REGIME_CHANGE_COST_HE,
+        fermions: c.resources.fermions - REGIME_CHANGE_COST_FERMIONS,
+      },
+    });
+    await tx.civilization.update({
+      where: { id: c.id },
+      data: { politicalRegime: regime },
+    });
+    await addJournal(
+      tx,
+      c.id,
+      'system',
+      'Смена режима',
+      `Политический режим изменён на ${regime}.`
+    );
+    return catchUpInTx(tx, c.id, now);
+  });
+  return toGameState(civ);
+}

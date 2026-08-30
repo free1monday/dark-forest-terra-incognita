@@ -1,5 +1,21 @@
 import { useState, type FormEvent } from 'react';
-import { DEFAULT_FOCUSES, type CivilizationFocuses, type FocusKey, FOCUS_KEYS } from '@shared';
+import {
+  DEFAULT_FOCUSES,
+  type CivilizationFocuses,
+  type FocusKey,
+  FOCUS_KEYS,
+  SPECIES_IDS,
+  SPECIES_LABELS_RU,
+  SPECIES_BONUSES,
+  POLITICAL_REGIME_IDS,
+  POLITICAL_REGIME_LABELS_RU,
+  GOVERNMENTS_BY_SPECIES,
+  GOVERNMENT_LABELS_RU,
+  defaultGovernment,
+  type SpeciesId,
+  type PoliticalRegimeId,
+  type GovernmentFormId,
+} from '@shared';
 import { FOCUS_LABELS } from '../lib/labels';
 import { useAuthStore } from '../store/authStore';
 import { useGameStore } from '../store/gameStore';
@@ -16,15 +32,27 @@ export function CreateCivilization() {
 
   const [name, setName] = useState('');
   const [focuses, setFocuses] = useState<CivilizationFocuses>({ ...DEFAULT_FOCUSES });
+  const [species, setSpecies] = useState<SpeciesId>('HUMAN');
+  const [regime, setRegime] = useState<PoliticalRegimeId>('DEMOCRACY');
+  const [government, setGovernment] = useState<GovernmentFormId>(defaultGovernment('HUMAN'));
 
   const setFocus = (key: FocusKey, value: number) => {
     setFocuses((f) => ({ ...f, [key]: value }));
   };
 
+  const onSpecies = (sp: SpeciesId) => {
+    setSpecies(sp);
+    setGovernment(defaultGovernment(sp));
+  };
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await create(name || 'Новая цивилизация', focuses);
+      await create(name || 'Новая цивилизация', focuses, {
+        species,
+        politicalRegime: regime,
+        governmentForm: government,
+      });
       setHasCivilization(true);
     } catch {
       // store error
@@ -42,8 +70,8 @@ export function CreateCivilization() {
           </button>
         </div>
         <p className="muted">
-          Аккаунт: <span className="mono">{user?.email}</span>. Мир генерируется на сервере
-          детерминированно по seed. Окрестности — <strong>Терра Инкогнита</strong>.
+          Аккаунт: <span className="mono">{user?.email}</span>. Мир и солнечная система
+          генерируются на сервере по seed. Окрестности — <strong>Терра Инкогнита</strong>.
         </p>
 
         <div className="field">
@@ -59,6 +87,52 @@ export function CreateCivilization() {
             autoFocus
             required
           />
+        </div>
+
+        <h2 className="panel-title">Раса</h2>
+        <div className={styles.chipRow}>
+          {SPECIES_IDS.map((id) => (
+            <button
+              key={id}
+              type="button"
+              className={`btn btn-sm ${species === id ? 'btn-premium' : 'btn-ghost'}`}
+              onClick={() => onSpecies(id)}
+              title={SPECIES_BONUSES[id].descriptionRu}
+            >
+              {SPECIES_LABELS_RU[id]}
+            </button>
+          ))}
+        </div>
+        <p className="muted" style={{ fontSize: '0.78rem' }}>
+          {SPECIES_BONUSES[species].descriptionRu}
+        </p>
+
+        <h2 className="panel-title">Форма правления</h2>
+        <div className={styles.chipRow}>
+          {GOVERNMENTS_BY_SPECIES[species].map((g) => (
+            <button
+              key={g}
+              type="button"
+              className={`btn btn-sm ${government === g ? 'btn-premium' : 'btn-ghost'}`}
+              onClick={() => setGovernment(g)}
+            >
+              {GOVERNMENT_LABELS_RU[g]}
+            </button>
+          ))}
+        </div>
+
+        <h2 className="panel-title">Политический режим</h2>
+        <div className={styles.chipRow}>
+          {POLITICAL_REGIME_IDS.map((id) => (
+            <button
+              key={id}
+              type="button"
+              className={`btn btn-sm ${regime === id ? 'btn-premium' : 'btn-ghost'}`}
+              onClick={() => setRegime(id)}
+            >
+              {POLITICAL_REGIME_LABELS_RU[id]}
+            </button>
+          ))}
         </div>
 
         <h2 className="panel-title">Начальные константы</h2>

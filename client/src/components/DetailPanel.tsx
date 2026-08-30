@@ -164,6 +164,23 @@ export function DetailPanel() {
             <dd className="mono">{civ.seed}</dd>
           </div>
           <div>
+            <dt>Раса</dt>
+            <dd>{civ.speciesLabel ?? civ.species ?? '—'}</dd>
+          </div>
+          <div>
+            <dt>Режим / правление</dt>
+            <dd>
+              {civ.politicalRegimeLabel ?? civ.politicalRegime ?? '—'} ·{' '}
+              {civ.governmentFormLabel ?? civ.governmentForm ?? '—'}
+            </dd>
+          </div>
+          <div>
+            <dt>Население / колонии</dt>
+            <dd className="mono">
+              {civ.population ?? '—'} / {civ.colonies ?? 1}
+            </dd>
+          </div>
+          <div>
             <dt>Стоимость ур. {civ.level + 1}</dt>
             <dd className="mono">
               {formatNumber(nextCost, 0)} ВЭ

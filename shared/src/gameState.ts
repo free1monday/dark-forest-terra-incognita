@@ -170,6 +170,17 @@ export interface GameState {
     eventProbability: number;
     constants: Record<FocusKey, number>;
     has4DRiftAccess: boolean;
+    /** Stage 10 */
+    species: string;
+    speciesLabel: string;
+    politicalRegime: string;
+    politicalRegimeLabel: string;
+    governmentForm: string;
+    governmentFormLabel: string;
+    population: number;
+    colonies: number;
+    homeSolarSystemId: string | null;
+    homePlanetId: string | null;
   };
   resources: {
     highEnergy: number;
@@ -292,3 +303,49 @@ export interface ActionResponse {
 }
 
 export type { BuildingId, FocusKey, ResourceId };
+
+
+/** Stage 10 API DTOs */
+export interface GamePlanet {
+  id: string;
+  planetKey: string;
+  indexInSystem: number;
+  name: string;
+  type: string;
+  typeLabel: string;
+  atmosphere: string;
+  atmosphereLabel: string;
+  gravity: number;
+  gravityLabel: string;
+  moons: number;
+  cosmicDust: string;
+  radiation: string;
+  temperatureDay: number;
+  temperatureNight: number;
+  resources: Record<string, number>;
+  orbitRadius: number;
+  hue: number;
+  isHomeworld: boolean;
+  colonized: boolean;
+  ownerCivilizationId: string | null;
+  canColonize: boolean;
+  colonizeReasons: string[];
+}
+
+export interface GameSolarSystem {
+  id: string;
+  seed: string;
+  name: string;
+  star: {
+    class: string;
+    classLabel: string;
+    temperature: number;
+    luminosity: number;
+    mass: number;
+    ageGyr: number;
+    color: string;
+    name: string;
+  };
+  planets: GamePlanet[];
+  homeworldIndex: number;
+}

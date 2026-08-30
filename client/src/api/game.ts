@@ -14,10 +14,14 @@ export function getCurrentState() {
   return apiFetch<{ state: GameState }>('/api/civilizations/current/state');
 }
 
-export function createCivilization(name: string, constants: CivilizationFocuses) {
+export function createCivilization(
+  name: string,
+  constants: CivilizationFocuses,
+  opts?: { species?: string; politicalRegime?: string; governmentForm?: string }
+) {
   return apiFetch<ActionResponse>('/api/civilizations', {
     method: 'POST',
-    body: JSON.stringify({ name, constants }),
+    body: JSON.stringify({ name, constants, ...opts }),
   });
 }
 

@@ -201,3 +201,8 @@ export const COMBAT_EXPOSURE_ON_STRIKE = 0.12;
 export const COMBAT_EXPOSURE_ON_DARK = 0.25;
 export const COMBAT_JAM_DURATION_SEC = 600;
 export const COMBAT_DECEPTION_SENSOR_PENALTY = 15;
+
+/** Stage 10 — colonization costs (HE + fermions). */
+export const COLONIZE_COST_HE = 150;
+export const COLONIZE_COST_FERMIONS = 8;
+export const COLONIZE_MIN_CIV_LEVEL = 3;

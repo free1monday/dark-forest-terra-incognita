@@ -59,6 +59,12 @@ export interface CivilizationState {
   focuses: CivilizationFocuses;
   world: WorldState;
   createdAt: string;
+  /** Stage 10 */
+  species?: string;
+  politicalRegime?: string;
+  governmentForm?: string;
+  population?: number;
+  colonies?: number;
 }
 
 export type ResourceState = Record<ResourceId, number> & {

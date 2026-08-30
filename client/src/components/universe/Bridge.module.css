@@ -1,0 +1,172 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 75;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 0.75rem;
+  background: rgba(2, 6, 23, 0.4);
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  width: min(1280px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  border-radius: 16px;
+  border: 1px solid rgba(125, 211, 252, 0.28);
+  background: rgba(7, 12, 28, 0.55);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 48px rgba(14, 165, 233, 0.12);
+  padding: 0.85rem;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.title {
+  margin: 0;
+  letter-spacing: 0.06em;
+  background: linear-gradient(90deg, #7dd3fc, #a5b4fc, #fde68a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 240px 1fr 220px;
+  gap: 0.65rem;
+}
+
+.left,
+.right,
+.center {
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(51, 65, 85, 0.7);
+  border-radius: 12px;
+  padding: 0.55rem;
+  min-height: 420px;
+  overflow: auto;
+}
+
+.sectionTitle {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 0.45rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.contact {
+  text-align: left;
+  background: rgba(30, 41, 59, 0.55);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0.45rem 0.5rem;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.contact:hover {
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.15);
+  transform: translateY(-1px);
+}
+
+.contactName {
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.meta {
+  font-size: 0.7rem;
+  margin-top: 0.15rem;
+}
+
+.placeholder {
+  height: 100%;
+  display: grid;
+  place-content: center;
+  gap: 0.75rem;
+  text-align: center;
+  padding: 1rem;
+}
+
+.scan {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto;
+  border-radius: 50%;
+  border: 2px solid rgba(34, 211, 238, 0.35);
+  box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4);
+  animation: ping 2s ease-out infinite;
+}
+
+@keyframes ping {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 24px rgba(34, 211, 238, 0);
+  }
+}
+
+.diplomacyHost {
+  /* DiplomacyPanel is a fixed overlay normally — nest it */
+  position: relative;
+  min-height: 400px;
+}
+
+.diplomacyHost :global([class*='overlay']),
+.diplomacyHost :global([class*='backdrop']) {
+  position: relative !important;
+  inset: auto !important;
+  background: transparent !important;
+  padding: 0 !important;
+  display: block !important;
+  z-index: 1 !important;
+}
+
+.diplomacyHost :global([class*='panel']),
+.diplomacyHost :global([class*='modal']) {
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .left,
+  .right,
+  .center {
+    min-height: 180px;
+  }
+}

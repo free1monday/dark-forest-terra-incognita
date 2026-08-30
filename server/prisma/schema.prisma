@@ -70,10 +70,22 @@ model Civilization {
   isInterstellarTraveling  Boolean  @default(false)
   galaxyTravelFinishesAt   DateTime?
   galaxyTravelNonce        Int      @default(0)
+  /// Stage 10 — species / politics / population
+  species                  String   @default("HUMAN")
+  politicalRegime          String   @default("DEMOCRACY")
+  governmentForm           String   @default("REPUBLIC")
+  /// Stored as string for JSON/BigInt-safe transport; integer population
+  population               BigInt   @default(1000000)
+  colonies                 Int      @default(1)
+  homeSolarSystemId        String?
+  homePlanetId             String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
   resources           ResourceState?
+  homeSolarSystem     SolarSystem?  @relation("CivHomeSystem", fields: [homeSolarSystemId], references: [id], onDelete: SetNull)
+  ownedPlanets        Planet[]      @relation("PlanetOwner")
+  solarSystems        SolarSystem[] @relation("SystemOwner")
   buildings           Building[]
   expeditions         Expedition[]
   journal             JournalEvent[]
@@ -323,4 +335,54 @@ model Purchase {
 
   @@index([userId])
   @@index([userId, createdAt])
+}
+
+/// Stage 10 — player's home (and later extra) solar systems
+model SolarSystem {
+  id                   String   @id @default(cuid())
+  seed                 String
+  name                 String
+  starClass            String
+  starTemperature      Int      @default(5500)
+  starLuminosity       Float    @default(1)
+  starMass             Float    @default(1)
+  starAgeGyr           Float    @default(4.5)
+  starColor            String   @default("#fff4d6")
+  ownerCivilizationId  String?
+  owner                Civilization? @relation("SystemOwner", fields: [ownerCivilizationId], references: [id], onDelete: Cascade)
+  homeFor              Civilization[] @relation("CivHomeSystem")
+  planets              Planet[]
+  createdAt            DateTime @default(now())
+
+  @@index([ownerCivilizationId])
+  @@index([seed])
+}
+
+model Planet {
+  id                   String   @id @default(cuid())
+  solarSystemId        String
+  solarSystem          SolarSystem @relation(fields: [solarSystemId], references: [id], onDelete: Cascade)
+  planetKey            String
+  indexInSystem        Int      @default(0)
+  name                 String
+  type                 String
+  atmosphere           String
+  gravity              Float    @default(1)
+  moons                Int      @default(0)
+  cosmicDust           String   @default("MEDIUM")
+  radiation            String   @default("MODERATE")
+  temperatureDay       Int      @default(20)
+  temperatureNight     Int      @default(0)
+  resourcesJson        String   @default("{}") @db.Text
+  orbitRadius          Float    @default(1)
+  hue                  Int      @default(200)
+  isHomeworld          Boolean  @default(false)
+  colonized            Boolean  @default(false)
+  ownerCivilizationId  String?
+  owner                Civilization? @relation("PlanetOwner", fields: [ownerCivilizationId], references: [id], onDelete: SetNull)
+  createdAt            DateTime @default(now())
+
+  @@unique([solarSystemId, planetKey])
+  @@index([solarSystemId])
+  @@index([ownerCivilizationId])
 }

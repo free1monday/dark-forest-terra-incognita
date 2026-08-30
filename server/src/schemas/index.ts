@@ -24,6 +24,11 @@ export const createCivilizationSchema = z.object({
     diplomacyFocus: focusValue,
     riskLevel: focusValue,
   }),
+  species: z
+    .enum(['HUMAN', 'INSECTOID', 'ORGANIC_LARGE', 'INORGANIC', 'ENERGY_BEING', 'SILICATE'])
+    .optional(),
+  politicalRegime: z.enum(['SCIENTISM', 'ANARCHY', 'MILITARISM', 'DEMOCRACY']).optional(),
+  governmentForm: z.string().min(2).max(40).optional(),
 });
 
 export const upgradeBuildingSchema = z.object({

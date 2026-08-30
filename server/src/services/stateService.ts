@@ -49,6 +49,20 @@ import {
   type GameCombatReport,
   type GameState,
   type WorldState,
+  SPECIES_LABELS_RU,
+  POLITICAL_REGIME_LABELS_RU,
+  GOVERNMENT_LABELS_RU,
+  type SpeciesId,
+  type PoliticalRegimeId,
+  type GovernmentFormId,
+  PLANET_TYPE_LABELS_RU,
+  ATMOSPHERE_LABELS_RU,
+  STAR_CLASS_LABELS_RU,
+  gravityLabelRu,
+  canColonizePlanet,
+  type PlanetTypeId,
+  type AtmosphereId,
+  type StarClassId,
 } from '@shared';
 import { contactToGame } from './contactService.js';
 
@@ -236,6 +250,24 @@ export function toGameState(civ: CivFull, serverTime = new Date()): GameState {
       eventProbability: civ.eventProbability,
       constants: focuses,
       has4DRiftAccess: has4d,
+      species: String((civ as { species?: string }).species ?? 'HUMAN'),
+      speciesLabel:
+        SPECIES_LABELS_RU[((civ as { species?: string }).species ?? 'HUMAN') as SpeciesId] ??
+        String((civ as { species?: string }).species ?? 'HUMAN'),
+      politicalRegime: String((civ as { politicalRegime?: string }).politicalRegime ?? 'DEMOCRACY'),
+      politicalRegimeLabel:
+        POLITICAL_REGIME_LABELS_RU[
+          ((civ as { politicalRegime?: string }).politicalRegime ?? 'DEMOCRACY') as PoliticalRegimeId
+        ] ?? String((civ as { politicalRegime?: string }).politicalRegime ?? 'DEMOCRACY'),
+      governmentForm: String((civ as { governmentForm?: string }).governmentForm ?? 'REPUBLIC'),
+      governmentFormLabel:
+        GOVERNMENT_LABELS_RU[
+          ((civ as { governmentForm?: string }).governmentForm ?? 'REPUBLIC') as GovernmentFormId
+        ] ?? String((civ as { governmentForm?: string }).governmentForm ?? 'REPUBLIC'),
+      population: Number((civ as { population?: bigint | number }).population ?? 1_000_000),
+      colonies: Number((civ as { colonies?: number }).colonies ?? 1),
+      homeSolarSystemId: (civ as { homeSolarSystemId?: string | null }).homeSolarSystemId ?? null,
+      homePlanetId: (civ as { homePlanetId?: string | null }).homePlanetId ?? null,
     },
     resources: {
       highEnergy: resources.highEnergy,
@@ -519,3 +551,106 @@ function buildCombatCatalog(
 }
 
 export type { ExpeditionTypeId };
+
+
+export function planetToGame(p: {
+  id: string;
+  planetKey: string;
+  indexInSystem: number;
+  name: string;
+  type: string;
+  atmosphere: string;
+  gravity: number;
+  moons: number;
+  cosmicDust: string;
+  radiation: string;
+  temperatureDay: number;
+  temperatureNight: number;
+  resourcesJson: string;
+  orbitRadius: number;
+  hue: number;
+  isHomeworld: boolean;
+  colonized: boolean;
+  ownerCivilizationId: string | null;
+}) {
+  let resources: Record<string, number> = {};
+  try {
+    resources = JSON.parse(p.resourcesJson || '{}') as Record<string, number>;
+  } catch {
+    resources = {};
+  }
+  const owned = !!(p.colonized || p.ownerCivilizationId);
+  const check = canColonizePlanet(
+    {
+      type: p.type as PlanetTypeId,
+      atmosphere: p.atmosphere as AtmosphereId,
+      gravity: p.gravity,
+      radiation: p.radiation as 'MINIMAL' | 'MODERATE' | 'HIGH' | 'LETHAL',
+      isHomeworld: p.isHomeworld,
+    },
+    owned
+  );
+  return {
+    id: p.id,
+    planetKey: p.planetKey,
+    indexInSystem: p.indexInSystem,
+    name: p.name,
+    type: p.type,
+    typeLabel: PLANET_TYPE_LABELS_RU[p.type as PlanetTypeId] ?? p.type,
+    atmosphere: p.atmosphere,
+    atmosphereLabel: ATMOSPHERE_LABELS_RU[p.atmosphere as AtmosphereId] ?? p.atmosphere,
+    gravity: p.gravity,
+    gravityLabel: gravityLabelRu(p.gravity),
+    moons: p.moons,
+    cosmicDust: p.cosmicDust,
+    radiation: p.radiation,
+    temperatureDay: p.temperatureDay,
+    temperatureNight: p.temperatureNight,
+    resources,
+    orbitRadius: p.orbitRadius,
+    hue: p.hue,
+    isHomeworld: p.isHomeworld,
+    colonized: p.colonized,
+    ownerCivilizationId: p.ownerCivilizationId,
+    canColonize: check.ok,
+    colonizeReasons: check.reasons,
+  };
+}
+
+export function solarSystemToGame(sys: {
+  id: string;
+  seed: string;
+  name: string;
+  starClass: string;
+  starTemperature: number;
+  starLuminosity: number;
+  starMass: number;
+  starAgeGyr: number;
+  starColor: string;
+  planets: Array<Parameters<typeof planetToGame>[0]>;
+}) {
+  const planets = [...sys.planets]
+    .sort((a, b) => a.indexInSystem - b.indexInSystem)
+    .map(planetToGame);
+  const homeworldIndex = Math.max(
+    0,
+    planets.findIndex((p) => p.isHomeworld)
+  );
+  return {
+    id: sys.id,
+    seed: sys.seed,
+    name: sys.name,
+    star: {
+      class: sys.starClass,
+      classLabel: STAR_CLASS_LABELS_RU[sys.starClass as StarClassId] ?? sys.starClass,
+      temperature: sys.starTemperature,
+      luminosity: sys.starLuminosity,
+      mass: sys.starMass,
+      ageGyr: sys.starAgeGyr,
+      color: sys.starColor,
+      name: sys.name,
+    },
+    planets,
+    homeworldIndex,
+  };
+}

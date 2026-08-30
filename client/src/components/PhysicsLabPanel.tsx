@@ -82,11 +82,7 @@ export function PhysicsLabPanel() {
               <div className={styles.lawName}>{law.name}</div>
               <div className={styles.lawDesc}>{law.description}</div>
               <div className={styles.lawMeta}>
-                <span className={styles.cost}>
-                  ТЭ {formatNumber(law.cost.darkEnergy, 0)} · ТМ{' '}
-                  {formatNumber(law.cost.darkMatter, 0)} · АМ{' '}
-                  {formatNumber(law.cost.antimatter, 0)}
-                </span>
+                <span className={styles.cost}>{formatCostParts(law.cost)}</span>
                 {law.active ? (
                   <button
                     type="button"

@@ -4,6 +4,7 @@ import { formatNumber } from '../lib/format';
 import { BUILDING_LABELS } from '../lib/labels';
 import { useGameStore } from '../store/gameStore';
 import { ResourceCost } from './icons/ResourceIcons';
+import { BuildingIcon } from './icons/ObjectIcons';
 import styles from './BuildingsPanel.module.css';
 
 function levelOf(
@@ -48,6 +49,9 @@ export function BuildingsPanel() {
               role="button"
               tabIndex={0}
             >
+              <div className={styles.iconWrap}>
+                <BuildingIcon id={id} size={36} />
+              </div>
               <div className={styles.info}>
                 <div className={styles.name}>
                   {labels.name}

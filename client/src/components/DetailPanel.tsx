@@ -18,6 +18,7 @@ import {
 } from '../lib/labels';
 import { useGameStore } from '../store/gameStore';
 import { ResourceCost, formatCostParts } from './icons/ResourceIcons';
+import { BuildingIcon } from './icons/ObjectIcons';
 import styles from './DetailPanel.module.css';
 
 export function DetailPanel() {
@@ -95,6 +96,7 @@ export function DetailPanel() {
     return (
       <div className={`glass ${styles.panel}`}>
         <h2 className="panel-title">Постройка</h2>
+        <div style={{ margin: '0.35rem 0 0.5rem' }}><BuildingIcon id={id} size={56} /></div>
         <h3 className={styles.name}>{labels.name}</h3>
         <p className={styles.desc}>{labels.desc}</p>
         <dl className={styles.dl}>

@@ -6,14 +6,14 @@
   "installCommand": "npm run vercel-install",
   "framework": null,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/api/:path*", "destination": "/api/index.ts" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/index.js": {
+    "api/index.ts": {
       "memory": 1024,
       "maxDuration": 60,
-      "includeFiles": "server/**"
+      "includeFiles": "{server/**,api/handler.cjs}"
     }
   }
 }

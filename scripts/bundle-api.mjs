@@ -42,6 +42,7 @@ for (const stale of ['api/index.js', 'api/index.js.map']) {
 
 await esbuild.build({
   absWorkingDir: root,
+  nodePaths: [path.join(root, 'server/node_modules'), path.join(root, 'node_modules')],
   entryPoints: [path.join(root, 'api/bundle-entry.ts')],
   bundle: true,
   platform: 'node',

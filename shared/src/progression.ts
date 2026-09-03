@@ -12,15 +12,25 @@ export const MAX_ACTIVE_PHYSICS_LAWS = 3;
  * Soft-capped for MVP playability while preserving steep late curve.
  */
 export function civilizationLevelCostHe(currentLevel: number): number {
-  // Stage 11: costs × LEVEL_COST_GLOBAL_MUL (~10× slower leveling)
+  /**
+   * Stage 11: × LEVEL_COST_GLOBAL_MUL.
+   * Stage 12: after L10 use gentler exponent (1.12) so post-14 is not a hard wall.
+   * L1–10 keep classic 1.22 curve (tutorial pacing).
+   */
   const mul = LEVEL_COST_GLOBAL_MUL;
   if (currentLevel < 1) return Math.floor(50 * mul);
-  if (currentLevel < 60) {
+  if (currentLevel <= 10) {
     return Math.floor(50 * Math.pow(1.22, currentLevel - 1) * mul);
   }
-  const base = Math.floor(50 * Math.pow(1.22, 59) * mul);
-  const late = Math.floor(base * Math.pow(1.18, currentLevel - 60));
-  return Math.min(500_000_000, Math.max(base, late));
+  // cost at 10→11 as anchor
+  const anchor = 50 * Math.pow(1.22, 9) * mul;
+  if (currentLevel < 60) {
+    // steps beyond 10 with softer 1.12
+    return Math.floor(anchor * Math.pow(1.12, currentLevel - 10));
+  }
+  const at60 = anchor * Math.pow(1.12, 50);
+  const late = Math.floor(at60 * Math.pow(1.15, currentLevel - 60));
+  return Math.min(500_000_000, Math.max(Math.floor(at60), late));
 }
 
 /**

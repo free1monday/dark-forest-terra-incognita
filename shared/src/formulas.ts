@@ -1,4 +1,15 @@
-import { BUILDINGS, CAPACITY_PER_CIV_LEVEL, CAPACITY_PER_COLLIDER_LEVEL, EXPEDITION_OUTCOMES, HE_PRODUCTION_GLOBAL_MUL } from './balance';
+import {
+  BUILDINGS,
+  CAPACITY_PER_CIV_LEVEL,
+  CAPACITY_PER_COLLIDER_LEVEL,
+  EXPEDITION_OUTCOMES,
+  HE_PRODUCTION_GLOBAL_MUL,
+  HE_LEVEL_GROWTH,
+  HE_COLLIDER_LEVEL_GROWTH,
+  HE_BUILDING_COUNT_GROWTH,
+  HE_CRIT_CHANCE,
+  HE_CRIT_MUL,
+} from './balance';
 import type { BuildingId } from './constants';
 import {
   DARK_ENERGY_SIPHON_PER_LEVEL,
@@ -72,13 +83,22 @@ export function highEnergyMilliPerSecond(
 ): number {
   const collider = getBuildingLevel(buildings, 'high_energy_collider');
   const def = BUILDINGS.high_energy_collider;
-  const baseMilli = Math.round(Math.max(0, collider) * def.hePerLevel * 1000);
-  const levelMul = 1 + civLevel * 0.02;
+  // Stage 12: collider base scales with civ level (+15%/lvl) and building density
+  const buildingLevels = buildings.reduce((s, b) => s + Math.max(0, b.level), 0);
+  const colliderLevelMul = 1 + civLevel * HE_COLLIDER_LEVEL_GROWTH;
+  const baseMilli = Math.round(
+    Math.max(0, collider) * def.hePerLevel * 1000 * colliderLevelMul
+  );
+  // Stage 12: +10%/civ level (replaces old +2%)
+  const levelMul = 1 + civLevel * HE_LEVEL_GROWTH;
+  const buildingMul = 1 + buildingLevels * HE_BUILDING_COUNT_GROWTH;
   const expansionMul = 1 + focuses.expansionFocus / 200;
   const research = getBuildingLevel(buildings, 'research_node');
   const scienceMul = 1 + research * 0.01 + focuses.scienceFocus / 500;
   const artMul = (bonuses.heMul ?? 1) * (bonuses.allMul ?? 1) * (bonuses.physicsAllMul ?? 1);
-  const rateMilli = Math.floor(baseMilli * levelMul * expansionMul * scienceMul * artMul);
+  const rateMilli = Math.floor(
+    baseMilli * levelMul * buildingMul * expansionMul * scienceMul * artMul
+  );
   const passiveMilli = Math.floor((bonuses.passive?.highEnergy ?? 0) * 1000);
   return Math.floor((rateMilli + passiveMilli) * HE_PRODUCTION_GLOBAL_MUL);
 }
@@ -196,7 +216,12 @@ export function applyProductionTick(
 ): { resources: ResourceState; minedHe: number; highEnergyMilliRemainder: number } {
   const safeSeconds = Math.max(0, Math.floor(seconds));
   const rateMilli = highEnergyMilliPerSecond(buildings, civ.level, civ.focuses, bonuses);
-  const totalMilli = highEnergyMilliRemainder + rateMilli * safeSeconds;
+  // Stage 12: soft crit (~5%) doubles HE gained this tick chunk (deterministic-ish via remainder)
+  const crit =
+    safeSeconds > 0 && (highEnergyMilliRemainder * 17 + safeSeconds * 31 + civ.level * 13) % 100 < HE_CRIT_CHANCE * 100
+      ? HE_CRIT_MUL
+      : 1;
+  const totalMilli = highEnergyMilliRemainder + rateMilli * safeSeconds * crit;
   const gainedHe = Math.floor(totalMilli / 1000);
   const nextRemainder = totalMilli % 1000;
 

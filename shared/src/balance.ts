@@ -24,8 +24,20 @@ export interface BuildingDef {
 
 /** Stage 11 — global HE slowdown (production + passive HE + expedition HE gains). */
 export const HE_PRODUCTION_GLOBAL_MUL = 0.1;
-/** Stage 11 — level curve steepness (costs × this). */
+/** Stage 11 — level curve steepness (costs × this). Softened after L10 in progression.ts */
 export const LEVEL_COST_GLOBAL_MUL = 10;
+
+/** Stage 12 — HE scales with civ level (was +2%/lvl; now stronger post-wall fix). */
+export const HE_LEVEL_GROWTH = 0.10; // +10% production per civ level
+/** Stage 12 — extra collider scaling with level */
+export const HE_COLLIDER_LEVEL_GROWTH = 0.15; // +15% per civ level on collider base
+/** Stage 12 — +1% HE per total building level */
+export const HE_BUILDING_COUNT_GROWTH = 0.01;
+/** Stage 12 — expedition HE loot recovery after stage11 nerf */
+export const EXPEDITION_HE_REWARD_MUL = 0.2; // was 0.1; ~2× expedition HE
+/** Stage 12 — soft crit on production tick */
+export const HE_CRIT_CHANCE = 0.05;
+export const HE_CRIT_MUL = 2;
 
 export const BUILDINGS: Record<BuildingId, BuildingDef> = {
   high_energy_collider: {
@@ -212,5 +224,3 @@ export const COLONIZE_COST_HE = 150;
 export const COLONIZE_COST_FERMIONS = 8;
 export const COLONIZE_MIN_CIV_LEVEL = 3;
 
-/** Stage 11 — expedition HE loot scale (matches production slowdown). */
-export const EXPEDITION_HE_REWARD_MUL = 0.1;

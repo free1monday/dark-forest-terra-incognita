@@ -29,7 +29,11 @@ import { Bridge } from './universe/Bridge';
 import { SolarSystemView } from './universe/SolarSystemView';
 import { CivilizationProfile } from './universe/CivilizationProfile';
 import { WeaponsPanel } from './WeaponsPanel';
+import { NextGoalBanner } from './NextGoalBanner';
+import { Tutorial } from './Tutorial';
 import styles from './MainScreen.module.css';
+
+type PrimaryTab = 'build' | 'explore' | 'scan';
 
 export function MainScreen() {
   const [adminOpen, setAdminOpen] = useState(false);
@@ -38,6 +42,11 @@ export function MainScreen() {
   const [systemOpen, setSystemOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [weaponsOpen, setWeaponsOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [primary, setPrimary] = useState<PrimaryTab>('build');
+  const [tutorialForce, setTutorialForce] = useState(false);
+  const [showExtras, setShowExtras] = useState(false);
+
   useEventToasts();
   const civ = useGameStore((s) => s.state?.civilization);
   const resources = useGameStore((s) => s.state?.resources);
@@ -68,14 +77,19 @@ export function MainScreen() {
     civ.level < 100 &&
     !actionLoading;
 
-  const levelTitle = 'Стоимость повышения уровня';
-
   const onLogout = () => {
     clearGame();
     logout();
   };
 
   const lateAccent = civ.level >= 90;
+
+  const onGoalAction = (action: 'build' | 'explore' | 'scan' | 'level' | 'contacts' | 'wait') => {
+    if (action === 'build') setPrimary('build');
+    else if (action === 'explore') setPrimary('explore');
+    else if (action === 'scan' || action === 'contacts') setPrimary('scan');
+    else if (action === 'level' && canLevel) void levelUp();
+  };
 
   return (
     <div className={`${styles.layout} ${lateAccent ? styles.lateGame : ''}`}>
@@ -86,89 +100,23 @@ export function MainScreen() {
         </div>
         <div className={styles.civQuick}>
           <span className={`${styles.user} mono muted`}>{user?.email}</span>
-          <span className="tag">радар {effRadar}</span>
-          <span
-            className="tag"
-            title="Чем выше значение, тем легче вашу цивилизацию обнаружить"
-          >
-            Заметность: {signalExposure?.toFixed(2) ?? '—'}
-          </span>
-          <span className="tag tag-gold" title="Процветание">
-            ★ {formatNumber(civ.prosperityScore, 0)}
-          </span>
-          <span className="tag" title="Население">
-            {formatPopulation(civ.population ?? 1_000_000)}
-          </span>
-          <span className="tag" title={civ.speciesLabel ?? 'Раса'}>
-            {civ.speciesLabel ?? civ.species ?? '—'}
-          </span>
-          <span className="tag" title="Эфирные кредиты">
-            ◆ {premiumCredits ?? user?.premiumCredits ?? 0}
-          </span>
-          {civ.has4DRiftAccess && <span className="tag tag-gold">4D</span>}
-          {traveling && <span className="tag">Межгалактика…</span>}
-          {(civ.physicsLaws?.length ?? 0) > 0 && (
-            <span className="tag" title={civ.physicsLaws.join(', ')}>
-              Законы {civ.physicsLaws.length}/3
-            </span>
-          )}
           <button
             type="button"
             className={`btn btn-ghost btn-sm ${styles.civBtn}`}
+            data-tutorial="level-up"
             onClick={() => select({ kind: 'civilization' })}
           >
             {civ.name} · ур. {civ.level}
           </button>
-          <button type="button" className="btn btn-sm" onClick={() => openLeaderboard()}>
-            Рейтинг
-          </button>
-          <button type="button" className="btn btn-sm btn-premium" onClick={() => openShop()}>
-            Магазин
-          </button>
-          <button type="button" className="btn btn-sm" onClick={() => setMapOpen(true)}>
-            Вселенная
-          </button>
-          <button type="button" className="btn btn-sm" onClick={() => setBridgeOpen(true)}>
-            Рубка
-          </button>
-          <button type="button" className="btn btn-sm" onClick={() => setWeaponsOpen(true)}>
-            Оружие
-          </button>
-          <button type="button" className="btn btn-sm" onClick={() => setSystemOpen(true)}>
-            Система
-          </button>
-          <button
-            type="button"
-            className="btn btn-sm"
-            onClick={() => setProfileOpen(true)}
-            title="Раса, режим, население"
-          >
-            Профиль
-          </button>
-          {isAdmin && (
-            <button type="button" className="btn btn-sm" onClick={() => setAdminOpen(true)}>
-              Админ
-            </button>
-          )}
-          {civ.level >= 80 && (
-            <button type="button" className="btn btn-sm" onClick={() => openCosmos()}>
-              Космос
-            </button>
-          )}
-          {civ.level >= 90 && (
-            <button type="button" className="btn btn-sm" onClick={() => openPhysics()}>
-              Физика
-            </button>
-          )}
           <button
             type="button"
             className="btn btn-sm"
             disabled={!canLevel}
+            data-tutorial="level-up"
             onClick={() => void levelUp()}
-            title={levelTitle}
+            title="Стоимость повышения уровня"
           >
-            Ур. ↑{' '}
-            <ResourceCost id="highEnergy" amount={nextCost} />
+            Ур. ↑ <ResourceCost id="highEnergy" amount={nextCost} />
             {nextDe > 0 ? (
               <>
                 {' '}
@@ -176,34 +124,185 @@ export function MainScreen() {
               </>
             ) : null}
           </button>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={onLogout}>
-            Выйти
-          </button>
+          <div className={styles.moreWrap}>
+            <button
+              type="button"
+              className="btn btn-sm btn-ghost"
+              onClick={() => setMoreOpen((v) => !v)}
+              aria-expanded={moreOpen}
+            >
+              Ещё ▾
+            </button>
+            {moreOpen && (
+              <div className={styles.moreMenu} role="menu">
+                <button type="button" role="menuitem" onClick={() => { setMapOpen(true); setMoreOpen(false); }}>
+                  🌌 Вселенная
+                </button>
+                <button type="button" role="menuitem" onClick={() => { setBridgeOpen(true); setMoreOpen(false); }}>
+                  🛰️ Рубка
+                </button>
+                <button type="button" role="menuitem" onClick={() => { setWeaponsOpen(true); setMoreOpen(false); }}>
+                  ⚔️ Оружие
+                </button>
+                <button type="button" role="menuitem" onClick={() => { setSystemOpen(true); setMoreOpen(false); }}>
+                  ☀️ Система
+                </button>
+                <button type="button" role="menuitem" onClick={() => { setProfileOpen(true); setMoreOpen(false); }}>
+                  👤 Профиль
+                </button>
+                <button type="button" role="menuitem" onClick={() => { openShop(); setMoreOpen(false); }}>
+                  🛒 Магазин
+                </button>
+                <button type="button" role="menuitem" onClick={() => { openLeaderboard(); setMoreOpen(false); }}>
+                  🏆 Рейтинг
+                </button>
+                {civ.level >= 80 && (
+                  <button type="button" role="menuitem" onClick={() => { openCosmos(); setMoreOpen(false); }}>
+                    Космос
+                  </button>
+                )}
+                {civ.level >= 90 && (
+                  <button type="button" role="menuitem" onClick={() => { openPhysics(); setMoreOpen(false); }}>
+                    Физика
+                  </button>
+                )}
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setTutorialForce(true);
+                    setMoreOpen(false);
+                  }}
+                >
+                  🎓 Обучение
+                </button>
+                <button type="button" role="menuitem" onClick={() => setShowExtras((v) => !v)}>
+                  {showExtras ? 'Скрыть детали' : 'Показать детали'}
+                </button>
+                {isAdmin && (
+                  <button type="button" role="menuitem" onClick={() => { setAdminOpen(true); setMoreOpen(false); }}>
+                    Админ
+                  </button>
+                )}
+                <button type="button" role="menuitem" onClick={onLogout}>
+                  Выйти
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
-      <ResourceBar />
-      <ExpeditionPanel />
-
-      <div className={styles.mainGrid}>
-        <SystemPanel />
-        <DetailPanel />
+      <div className={styles.metaRow}>
+        <span className="tag" title="Радар">
+          📡 {effRadar}
+        </span>
+        <span className="tag" title="Заметность">
+          👁 {signalExposure?.toFixed(2) ?? '—'}
+        </span>
+        <span className="tag tag-gold" title="Процветание">
+          ★ {formatNumber(civ.prosperityScore, 0)}
+        </span>
+        <span className="tag" title="Население">
+          {formatPopulation(civ.population ?? 1_000_000)}
+        </span>
+        {traveling && <span className="tag">Межгалактика…</span>}
+        <span className="tag" title="Кредиты">
+          ◆ {premiumCredits ?? user?.premiumCredits ?? 0}
+        </span>
       </div>
 
-      <div className={styles.secondaryGrid}>
-        <BuildingsPanel />
-        <ConstantsPanel />
-        <Journal />
+      <div data-tutorial="resources">
+        <ResourceBar />
       </div>
 
-      <div className={styles.tertiaryGrid}>
-        <ArtifactsPanel />
-        <AnomaliesPanel />
+      <NextGoalBanner onAction={onGoalAction} />
+
+      <div className={styles.primaryRow} role="tablist" aria-label="Главные действия">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={primary === 'build'}
+          data-tutorial="primary-build"
+          className={`${styles.primaryBtn} ${primary === 'build' ? styles.primaryActive : ''}`}
+          onClick={() => setPrimary('build')}
+        >
+          <span className={styles.primaryIcon} aria-hidden>
+            🏗️
+          </span>
+          <span className={styles.primaryLabel}>Строить</span>
+          <span className={styles.primaryHint}>здания</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={primary === 'explore'}
+          data-tutorial="primary-explore"
+          className={`${styles.primaryBtn} ${primary === 'explore' ? styles.primaryActive : ''}`}
+          onClick={() => setPrimary('explore')}
+        >
+          <span className={styles.primaryIcon} aria-hidden>
+            🚀
+          </span>
+          <span className={styles.primaryLabel}>Исследовать</span>
+          <span className={styles.primaryHint}>экспедиции</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={primary === 'scan'}
+          data-tutorial="primary-scan"
+          className={`${styles.primaryBtn} ${primary === 'scan' ? styles.primaryActive : ''}`}
+          onClick={() => setPrimary('scan')}
+        >
+          <span className={styles.primaryIcon} aria-hidden>
+            📡
+          </span>
+          <span className={styles.primaryLabel}>Сканировать</span>
+          <span className={styles.primaryHint}>радар / контакты</span>
+        </button>
       </div>
 
-      <div className={styles.contactsRow}>
-        <ContactsPanel />
+      <div className={styles.primaryPanel}>
+        {primary === 'build' && (
+          <div data-tutorial="building-collider">
+            <BuildingsPanel />
+          </div>
+        )}
+        {primary === 'explore' && <ExpeditionPanel />}
+        {primary === 'scan' && (
+          <div data-tutorial="contacts">
+            <ContactsPanel />
+            <div style={{ marginTop: '0.75rem' }}>
+              <SystemPanel />
+            </div>
+          </div>
+        )}
       </div>
+
+      {showExtras && (
+        <>
+          <div className={styles.mainGrid}>
+            <SystemPanel />
+            <DetailPanel />
+          </div>
+          <div className={styles.secondaryGrid}>
+            <ConstantsPanel />
+            <Journal />
+          </div>
+          <div className={styles.tertiaryGrid}>
+            <ArtifactsPanel />
+            <AnomaliesPanel />
+          </div>
+        </>
+      )}
+
+      {!showExtras && (
+        <div className={styles.compactExtras}>
+          <DetailPanel />
+          <Journal />
+        </div>
+      )}
 
       <DebugPanel />
       <DiplomacyPanel />
@@ -222,11 +321,12 @@ export function MainScreen() {
       />
       <CivilizationProfile open={profileOpen} onClose={() => setProfileOpen(false)} />
       <WeaponsPanel open={weaponsOpen} onClose={() => setWeaponsOpen(false)} />
+      <Tutorial forceOpen={tutorialForce} onCloseForce={() => setTutorialForce(false)} />
 
       <footer className={styles.footer}>
         <span className="mono muted">
-          Этап 10 · sid {civ.seed} · pop {formatPopulation(civ.population ?? 0)} · prosperity{' '}
-          {civ.prosperityScore} · exposure {signalExposure?.toFixed(3)}
+          Этап 12 · sid {civ.seed} · pop {formatPopulation(civ.population ?? 0)} · ★{' '}
+          {civ.prosperityScore}
           {civ.level >= 90 ? ' · glitch' : ''}
         </span>
       </footer>

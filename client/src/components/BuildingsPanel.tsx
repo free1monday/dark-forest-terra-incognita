@@ -40,7 +40,7 @@ export function BuildingsPanel() {
           return (
             <div
               key={id}
-              className={`${styles.row} clickable ${isSelected ? 'selected' : ''}`}
+              className={`${styles.row} clickable ${isSelected ? 'selected' : ''} ${canAfford ? styles.afford : lockedByLevel ? styles.lockedRow : styles.cantAfford}`}
               title={`${labels.desc}\nЭффект: ${labels.effect}\nУр. ${level} · улучшение: ${formatNumber(cost, 0)} ВЭ`}
               onClick={() => select({ kind: 'building', id })}
               onKeyDown={(e) => {
@@ -65,7 +65,7 @@ export function BuildingsPanel() {
               </div>
               <button
                 type="button"
-                className="btn btn-sm"
+                className={`btn btn-sm ${canAfford ? styles.btnGo : ''}`}
                 disabled={!canAfford}
                 onClick={(e) => {
                   e.stopPropagation();

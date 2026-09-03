@@ -151,3 +151,119 @@
     display: none;
   }
 }
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.primaryRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.primaryBtn {
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(51, 65, 85, 0.9);
+  background: rgba(15, 23, 42, 0.75);
+  color: inherit;
+  cursor: pointer;
+  padding: 0.55rem 0.4rem;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s, background 0.15s;
+}
+
+.primaryBtn:hover {
+  border-color: rgba(125, 211, 252, 0.45);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.12);
+  transform: translateY(-1px);
+}
+
+.primaryActive {
+  border-color: rgba(250, 204, 21, 0.55);
+  background: linear-gradient(160deg, rgba(14, 165, 233, 0.2), rgba(15, 23, 42, 0.9));
+  box-shadow: 0 0 20px rgba(250, 204, 21, 0.12);
+}
+
+.primaryIcon {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.primaryLabel {
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.primaryHint {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  text-transform: lowercase;
+}
+
+.primaryPanel {
+  min-height: 120px;
+}
+
+.moreWrap {
+  position: relative;
+}
+
+.moreMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 40;
+  min-width: 180px;
+  background: #0f172a;
+  border: 1px solid rgba(71, 85, 105, 0.9);
+  border-radius: 12px;
+  padding: 0.35rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.moreMenu button {
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: #e2e8f0;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  min-height: 44px;
+}
+
+.moreMenu button:hover {
+  background: rgba(56, 189, 248, 0.12);
+}
+
+.compactExtras {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 720px) {
+  .primaryBtn {
+    min-height: 64px;
+  }
+  .compactExtras {
+    grid-template-columns: 1fr;
+  }
+  .civQuick {
+    width: 100%;
+  }
+}

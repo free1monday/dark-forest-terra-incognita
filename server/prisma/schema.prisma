@@ -79,6 +79,8 @@ model Civilization {
   colonies                 Int      @default(1)
   homeSolarSystemId        String?
   homePlanetId             String?
+  /// Stage 12 — interactive tutorial finished
+  tutorialCompleted        Boolean  @default(false)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 

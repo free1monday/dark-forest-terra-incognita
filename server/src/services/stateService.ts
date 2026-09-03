@@ -268,6 +268,7 @@ export function toGameState(civ: CivFull, serverTime = new Date()): GameState {
       colonies: Number((civ as { colonies?: number }).colonies ?? 1),
       homeSolarSystemId: (civ as { homeSolarSystemId?: string | null }).homeSolarSystemId ?? null,
       homePlanetId: (civ as { homePlanetId?: string | null }).homePlanetId ?? null,
+      tutorialCompleted: !!(civ as { tutorialCompleted?: boolean }).tutorialCompleted,
     },
     resources: {
       highEnergy: resources.highEnergy,

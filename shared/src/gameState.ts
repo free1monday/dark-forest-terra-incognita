@@ -181,6 +181,7 @@ export interface GameState {
     colonies: number;
     homeSolarSystemId: string | null;
     homePlanetId: string | null;
+    tutorialCompleted: boolean;
   };
   resources: {
     highEnergy: number;

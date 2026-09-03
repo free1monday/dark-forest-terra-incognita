@@ -1488,3 +1488,17 @@ export async function changePoliticalRegime(
   });
   return toGameState(civ);
 }
+
+
+export async function completeTutorial(userId: string): Promise<GameState> {
+  invalidateStateCache(userId);
+  const civ = await prisma.civilization.findUnique({ where: { userId } });
+  if (!civ) throw new AppError('CIV_NOT_FOUND', 'Цивилизация не найдена', 404);
+  await prisma.civilization.update({
+    where: { id: civ.id },
+    data: { tutorialCompleted: true },
+  });
+  const full = await loadCivForUser(userId);
+  if (!full) throw new AppError('CIV_NOT_FOUND', 'Цивилизация не найдена', 404);
+  return toGameState(full);
+}

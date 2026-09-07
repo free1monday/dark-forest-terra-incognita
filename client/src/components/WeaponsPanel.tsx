@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '../api/client';
-import { formatCostParts } from './icons/ResourceIcons';
+import { ActionCost } from './ActionCost';
+import { InfoTip } from './InfoTip';
+import { ACTION_TIPS } from '../lib/tooltips';
+import type { ResourceId } from '@shared';
 import {
   IconPositronCannon,
   IconRelativisticDrop,
@@ -44,6 +47,7 @@ function WeaponArt({ type }: { type: string }) {
 
 export function WeaponsPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const contacts = useGameStore((s) => s.state?.contacts) ?? [];
+  const resources = useGameStore((s) => s.state?.resources);
   const applyState = useGameStore((s) => s.applyState);
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [weapons, setWeapons] = useState<WeaponRow[]>([]);
@@ -79,7 +83,11 @@ export function WeaponsPanel({ open, onClose }: { open: boolean; onClose: () => 
       <div className={styles.panel}>
         <header className={styles.head}>
           <div>
-            <h2 className={styles.title}>Оружие</h2>
+            <h2 className={styles.title}>
+              <InfoTip title={ACTION_TIPS.weapon_build.title} body={ACTION_TIPS.weapon_build.body} links={ACTION_TIPS.weapon_build.links}>
+                <span>Оружие</span>
+              </InfoTip>
+            </h2>
             <div className="muted" style={{ fontSize: '0.78rem' }}>
               Арсенал · транклюкатор: +{bonus} к обороне
             </div>
@@ -119,8 +127,7 @@ export function WeaponsPanel({ open, onClose }: { open: boolean; onClose: () => 
               </div>
               <p className={styles.desc}>{item.description}</p>
               <div className={styles.meta}>
-                {formatCostParts(item.cost)}
-                <div className="muted mono" style={{ fontSize: '0.72rem', marginTop: '0.35rem' }}>
+                <div className="muted mono" style={{ fontSize: '0.72rem', marginTop: '0.15rem' }}>
                   ~{formatNumber(item.buildDurationSec / 3600, 1)} ч · ур. {item.minCivLevel}+
                 </div>
               </div>
@@ -129,26 +136,32 @@ export function WeaponsPanel({ open, onClose }: { open: boolean; onClose: () => 
                   {item.reasons[0]}
                 </div>
               )}
-              <button
-                type="button"
-                className="btn btn-sm btn-premium"
-                disabled={!item.unlocked || busy}
-                onClick={() => {
-                  setBusy(true);
-                  void apiFetch<{ state: unknown }>('/api/weapons/build', {
-                    method: 'POST',
-                    body: JSON.stringify({ type: item.type }),
-                  })
-                    .then((r) => {
-                      applyState(r.state as never);
-                      return load();
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', marginTop: '0.35rem' }}>
+                <ActionCost
+                  cost={item.cost as Partial<Record<ResourceId, number>>}
+                  have={resources}
+                />
+                <button
+                  type="button"
+                  className="btn btn-sm btn-premium"
+                  disabled={!item.unlocked || busy}
+                  onClick={() => {
+                    setBusy(true);
+                    void apiFetch<{ state: unknown }>('/api/weapons/build', {
+                      method: 'POST',
+                      body: JSON.stringify({ type: item.type }),
                     })
-                    .catch((e) => setError(e instanceof Error ? e.message : 'Ошибка'))
-                    .finally(() => setBusy(false));
-                }}
-              >
-                Построить
-              </button>
+                      .then((r) => {
+                        applyState(r.state as never);
+                        return load();
+                      })
+                      .catch((e) => setError(e instanceof Error ? e.message : 'Ошибка'))
+                      .finally(() => setBusy(false));
+                  }}
+                >
+                  Построить
+                </button>
+              </div>
             </div>
           ))}
         </div>

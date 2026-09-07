@@ -1,4 +1,4 @@
-import { formatCostParts } from './icons/ResourceIcons';
+import { ActionCost } from './ActionCost';
 import { useGameStore } from '../store/gameStore';
 import styles from './PhysicsLabPanel.module.css';
 
@@ -81,7 +81,7 @@ export function PhysicsLabPanel() {
               <div className={styles.lawName}>{law.name}</div>
               <div className={styles.lawDesc}>{law.description}</div>
               <div className={styles.lawMeta}>
-                <span className={styles.cost}>{formatCostParts(law.cost)}</span>
+                <span className={styles.cost}><ActionCost cost={law.cost} have={state?.resources} /></span>
                 {law.active ? (
                   <button
                     type="button"

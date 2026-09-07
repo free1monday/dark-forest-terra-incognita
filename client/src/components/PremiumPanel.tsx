@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useGameStore } from '../store/gameStore';
+import { CreditsCost } from './ActionCost';
 import styles from './PremiumPanel.module.css';
 
 export function PremiumPanel() {
@@ -96,7 +97,7 @@ export function PremiumPanel() {
                 <div className={styles.cardName}>{item.name}</div>
                 <div className={styles.cardDesc}>{item.description}</div>
                 <div className={styles.cardMeta}>
-                  <span className={styles.cost}>{item.costCredits} кр.</span>
+                  <CreditsCost amount={item.costCredits} have={credits} />
                   <button
                     type="button"
                     className="btn btn-sm btn-primary"

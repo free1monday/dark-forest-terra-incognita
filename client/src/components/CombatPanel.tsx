@@ -1,18 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { formatNumber } from '../lib/format';
 import { useGameStore } from '../store/gameStore';
-import { formatCostParts } from './icons/ResourceIcons';
+import { ActionCost } from './ActionCost';
 import styles from './CombatPanel.module.css';
-
-function costStr(c: {
-  highEnergy: number;
-  antimatter: number;
-  darkEnergy: number;
-  darkMatter: number;
-  fermions: number;
-}) {
-  return formatCostParts(c) ?? '—';
-}
 
 export function CombatPanel() {
   const open = useGameStore((s) => s.combatPanelOpen);
@@ -23,6 +13,7 @@ export function CombatPanel() {
   const cancelCombat = useGameStore((s) => s.cancelCombat);
   const refresh = useGameStore((s) => s.refresh);
   const actionLoading = useGameStore((s) => s.actionLoading);
+  const resources = useGameStore((s) => s.state?.resources);
   const error = useGameStore((s) => s.error);
 
   const contact = useMemo(
@@ -147,7 +138,7 @@ export function CombatPanel() {
                     <span className={styles.attackName}>{a.name}</span>
                     <span className={styles.attackDesc}>{a.description}</span>
                     <span className={styles.attackCost}>
-                      {costStr(a.cost)} · prep~{a.prepSecEstimate}с · ур.{a.minCivLevel}+
+                      <ActionCost cost={a.cost} have={resources} /> · prep~{a.prepSecEstimate}с · ур.{a.minCivLevel}+
                     </span>
                     {a.reasons[0] && <span className={styles.attackReasons}>{a.reasons[0]}</span>}
                   </button>

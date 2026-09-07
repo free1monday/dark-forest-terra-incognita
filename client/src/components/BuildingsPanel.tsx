@@ -2,8 +2,10 @@ import { BUILDING_ORDER, BUILDINGS, buildingUpgradeCost } from '@shared';
 import type { BuildingId } from '@shared';
 import { formatNumber } from '../lib/format';
 import { BUILDING_LABELS } from '../lib/labels';
+import { buildingTip } from '../lib/tooltips';
 import { useGameStore } from '../store/gameStore';
-import { ResourceCost } from './icons/ResourceIcons';
+import { ActionRow } from './ActionCost';
+import { InfoTip } from './InfoTip';
 import { BuildingIcon } from './icons/ObjectIcons';
 import styles from './BuildingsPanel.module.css';
 
@@ -18,6 +20,7 @@ export function BuildingsPanel() {
   const buildings = useGameStore((s) => s.state?.buildings);
   const resources = useGameStore((s) => s.state?.resources);
   const civ = useGameStore((s) => s.state?.civilization);
+  const hePerSec = useGameStore((s) => s.state?.production.highEnergyPerSec ?? 0);
   const upgrade = useGameStore((s) => s.upgradeBuilding);
   const actionLoading = useGameStore((s) => s.actionLoading);
   const select = useGameStore((s) => s.select);
@@ -36,12 +39,15 @@ export function BuildingsPanel() {
           const canAfford = resources.highEnergy >= cost && !lockedByLevel && !actionLoading;
           const isSelected = selected?.kind === 'building' && selected.id === id;
           const labels = BUILDING_LABELS[id];
+          const tip = buildingTip(id, level, {
+            hePerSec: id === 'high_energy_collider' ? hePerSec : undefined,
+            radarBonus: id === 'dark_sensor' ? level * 5 : undefined,
+          });
 
           return (
             <div
               key={id}
               className={`${styles.row} clickable ${isSelected ? 'selected' : ''} ${canAfford ? styles.afford : lockedByLevel ? styles.lockedRow : styles.cantAfford}`}
-              title={`${labels.desc}\nЭффект: ${labels.effect}\nУр. ${level} · улучшение: ${formatNumber(cost, 0)} ВЭ`}
               onClick={() => select({ kind: 'building', id })}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') select({ kind: 'building', id });
@@ -54,26 +60,31 @@ export function BuildingsPanel() {
               </div>
               <div className={styles.info}>
                 <div className={styles.name}>
-                  {labels.name}
+                  <InfoTip title={tip.title} body={tip.body} links={tip.links}>
+                    <span>{labels.name}</span>
+                  </InfoTip>
                   {lockedByLevel && <span className="tag">ур. {def.unlockedAtLevel}+</span>}
                 </div>
                 <div className={styles.sub}>
                   Уровень <strong className="mono">{level}</strong>
                   <span className="muted"> · </span>
-                  след. <ResourceCost id="highEnergy" amount={cost} />
+                  <span className={styles.effectLine}>{tip.body.split('.')[0]}.</span>
                 </div>
+                <ActionRow
+                  cost={{ highEnergy: cost }}
+                  have={resources}
+                  disabled={lockedByLevel}
+                  loading={actionLoading}
+                  onClick={() => void upgrade(id)}
+                  title={
+                    lockedByLevel
+                      ? `Нужен ур. цивилизации ${def.unlockedAtLevel}+`
+                      : `Улучшить · ${formatNumber(cost, 0)} ВЭ`
+                  }
+                >
+                  Улучшить
+                </ActionRow>
               </div>
-              <button
-                type="button"
-                className={`btn btn-sm ${canAfford ? styles.btnGo : ''}`}
-                disabled={!canAfford}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  void upgrade(id);
-                }}
-              >
-                Улучшить
-              </button>
             </div>
           );
         })}

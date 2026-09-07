@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { formatCostParts } from './icons/ResourceIcons';
+import { ActionCost } from './ActionCost';
 import styles from './CosmosPanel.module.css';
 
 export function CosmosPanel() {
@@ -53,7 +53,7 @@ export function CosmosPanel() {
             сбрасывается.
           </p>
           <div className={styles.cost}>
-            Стоимость: {formatCostParts(gt.cost)}
+            <ActionCost cost={gt.cost} have={state.resources} />
           </div>
           <div className="muted" style={{ fontSize: '0.75rem', marginTop: 6 }}>
             Длительность ~{gt.durationSec} с · доступ с ур. 80

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import type { ExpeditionTypeId } from '@shared';
+import type { ExpeditionTypeId, ResourceId } from '@shared';
 import { formatEta, formatNumber } from '../lib/format';
+import { ACTION_TIPS } from '../lib/tooltips';
 import { useGameStore } from '../store/gameStore';
-import { formatCostParts } from './icons/ResourceIcons';
+import { ActionRow } from './ActionCost';
+import { InfoTip } from './InfoTip';
 import styles from './ExpeditionPanel.module.css';
 
 export function ExpeditionPanel() {
@@ -30,12 +32,19 @@ export function ExpeditionPanel() {
 
   const left = active ? finishesAt - now : 0;
   const catalog = state.expeditionCatalog ?? [];
+  const resources = state.resources;
 
   return (
     <div className={`glass glow-border ${styles.wrap}`}>
       <div className={styles.header}>
         <h2 className="panel-title" style={{ margin: 0 }}>
-          Экспедиции · Терра Инкогнита
+          <InfoTip
+            title={ACTION_TIPS.expedition.title}
+            body={ACTION_TIPS.expedition.body}
+            links={ACTION_TIPS.expedition.links}
+          >
+            <span>Экспедиции · Терра Инкогнита</span>
+          </InfoTip>
         </h2>
         <div className={styles.radar}>
           Эфф. радар <span className="mono">{state.effectiveRadar}</span>
@@ -60,23 +69,24 @@ export function ExpeditionPanel() {
 
       <div className={styles.grid}>
         {catalog.map((item) => {
-          const locked = !item.unlocked || active || actionLoading;
-          const costNode = formatCostParts(item.cost);
-
+          const cost = item.cost as Partial<Record<ResourceId, number>>;
           return (
             <div
               key={item.id}
               className={`${styles.card} ${!item.unlocked ? styles.locked : ''}`}
             >
-              <div className={styles.cardTitle}>{item.name}</div>
+              <div className={styles.cardTitle}>
+                <InfoTip
+                  title={item.name}
+                  body={item.description}
+                  links="Связь: экспедиции могут поднять заметность, если находят сигналы."
+                >
+                  <span>{item.name}</span>
+                </InfoTip>
+              </div>
               <p className={styles.desc}>{item.description}</p>
               <div className={styles.meta}>
-                <div>
-                  Стоимость: {costNode || '—'}
-                </div>
-                <div>
-                  ~{formatNumber(item.durationSecEstimate, 0)} с · ур. {item.minCivLevel}+
-                </div>
+                ~{formatNumber(item.durationSecEstimate, 0)} с · ур. {item.minCivLevel}+
               </div>
               {!item.unlocked && item.reasons.length > 0 && (
                 <ul className={styles.reasons}>
@@ -85,14 +95,15 @@ export function ExpeditionPanel() {
                   ))}
                 </ul>
               )}
-              <button
-                type="button"
-                className="btn btn-sm btn-primary"
-                disabled={locked}
+              <ActionRow
+                cost={cost}
+                have={resources}
+                disabled={!item.unlocked || active}
+                loading={actionLoading}
                 onClick={() => void start(item.id as ExpeditionTypeId)}
               >
                 Запустить
-              </button>
+              </ActionRow>
             </div>
           );
         })}

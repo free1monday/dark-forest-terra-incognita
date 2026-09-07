@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { formatNumber } from '../lib/format';
 import { useGameStore } from '../store/gameStore';
-import { formatCostParts } from './icons/ResourceIcons';
+import { ActionCost } from './ActionCost';
 import styles from './DiplomacyPanel.module.css';
 
 function formatEta(sec: number): string {
@@ -31,6 +31,7 @@ export function DiplomacyPanel() {
   const send = useGameStore((s) => s.sendDiplomacyCard);
   const refresh = useGameStore((s) => s.refreshDiplomacy);
   const actionLoading = useGameStore((s) => s.actionLoading);
+  const resources = useGameStore((s) => s.state?.resources);
   const error = useGameStore((s) => s.error);
   const [encrypt, setEncrypt] = useState(false);
   const [tick, setTick] = useState(0);
@@ -140,13 +141,7 @@ export function DiplomacyPanel() {
           <div className={styles.cards}>
             {thread.availableCards.map((card) => {
               const cost = card.cost;
-              const costNode =
-                formatCostParts({
-                  highEnergy: cost.highEnergy,
-                  antimatter: cost.antimatter,
-                  darkMatter: encrypt && card.canEncrypt ? Math.max(15, cost.darkMatter || 0) : cost.darkMatter,
-                }) || 'бесплатно';
-              return (
+                            return (
                 <button
                   key={card.type}
                   type="button"
@@ -157,7 +152,11 @@ export function DiplomacyPanel() {
                 >
                   <span className={styles.cardName}>{card.name}</span>
                   <span className={styles.cardDesc}>{card.description}</span>
-                  <span className={styles.cardCost}>{costNode}</span>
+                  <span className={styles.cardCost}><ActionCost cost={{
+                    highEnergy: cost.highEnergy,
+                    antimatter: cost.antimatter,
+                    darkMatter: encrypt && card.canEncrypt ? Math.max(15, cost.darkMatter || 0) : cost.darkMatter,
+                  }} have={resources} /></span>
                   {!card.unlocked && card.reasons[0] && (
                     <span className={styles.cardReasons}>{card.reasons[0]}</span>
                   )}

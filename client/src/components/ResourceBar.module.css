@@ -10,9 +10,24 @@
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
   background: rgba(2, 6, 23, 0.35);
-  padding: 0.55rem 0.65rem;
+  padding: 0.45rem 0.55rem 0.5rem;
   color: inherit;
   min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.itemBtn {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: inherit;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
 }
 
 .name {

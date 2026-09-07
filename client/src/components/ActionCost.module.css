@@ -1,0 +1,80 @@
+.wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.28rem 0.5rem;
+  border-radius: 10px;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  background: rgba(15, 23, 42, 0.75);
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+.chip :global(svg) {
+  width: 1.25em;
+  height: 1.25em;
+}
+
+.chipBad {
+  border-color: rgba(248, 113, 113, 0.65);
+  background: rgba(127, 29, 29, 0.35);
+  color: #fecaca;
+  opacity: 0.92;
+}
+
+.ok .chip {
+  border-color: rgba(52, 211, 153, 0.45);
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.08);
+}
+
+.bad {
+  opacity: 0.95;
+}
+
+.short {
+  font-size: 0.72rem;
+  color: #fca5a5;
+  line-height: 1.25;
+}
+
+.free {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.cr {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  margin-top: 0.35rem;
+}
+
+.actionRow .btn,
+.actionRow button {
+  min-height: 44px;
+  min-width: 96px;
+}

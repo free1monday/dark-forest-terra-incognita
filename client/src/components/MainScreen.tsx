@@ -1,5 +1,4 @@
 import { civilizationLevelCostHe, formatPopulation } from '@shared';
-import { ResourceCost } from './icons/ResourceIcons';
 import { formatNumber } from '../lib/format';
 import { useAuthStore } from '../store/authStore';
 import { useState } from 'react';
@@ -31,6 +30,10 @@ import { CivilizationProfile } from './universe/CivilizationProfile';
 import { WeaponsPanel } from './WeaponsPanel';
 import { NextGoalBanner } from './NextGoalBanner';
 import { Tutorial } from './Tutorial';
+import { MetricChip } from './InfoTip';
+import { InfoTip } from './InfoTip';
+import { ActionCost } from './ActionCost';
+import { ACTION_TIPS, METRIC_TIPS } from '../lib/tooltips';
 import styles from './MainScreen.module.css';
 
 type PrimaryTab = 'build' | 'explore' | 'scan';
@@ -108,22 +111,27 @@ export function MainScreen() {
           >
             {civ.name} · ур. {civ.level}
           </button>
-          <button
-            type="button"
-            className="btn btn-sm"
-            disabled={!canLevel}
-            data-tutorial="level-up"
-            onClick={() => void levelUp()}
-            title="Стоимость повышения уровня"
-          >
-            Ур. ↑ <ResourceCost id="highEnergy" amount={nextCost} />
-            {nextDe > 0 ? (
-              <>
-                {' '}
-                <ResourceCost id="darkEnergy" amount={nextDe} />
-              </>
-            ) : null}
-          </button>
+          <div className={styles.levelAction} data-tutorial="level-up">
+            <ActionCost
+              cost={{ highEnergy: nextCost, darkEnergy: nextDe > 0 ? nextDe : 0 }}
+              have={resources}
+            />
+            <InfoTip
+              title={ACTION_TIPS.level_up.title}
+              body={ACTION_TIPS.level_up.body}
+              links={ACTION_TIPS.level_up.links}
+              compact
+            />
+            <button
+              type="button"
+              className="btn btn-sm"
+              disabled={!canLevel}
+              onClick={() => void levelUp()}
+              title="Повысить уровень цивилизации"
+            >
+              Ур. ↑
+            </button>
+          </div>
           <div className={styles.moreWrap}>
             <button
               type="button"
@@ -194,22 +202,29 @@ export function MainScreen() {
       </header>
 
       <div className={styles.metaRow}>
-        <span className="tag" title="Радар">
-          📡 {effRadar}
-        </span>
-        <span className="tag" title="Заметность">
-          👁 {signalExposure?.toFixed(2) ?? '—'}
-        </span>
-        <span className="tag tag-gold" title="Процветание">
-          ★ {formatNumber(civ.prosperityScore, 0)}
-        </span>
-        <span className="tag" title="Население">
-          {formatPopulation(civ.population ?? 1_000_000)}
-        </span>
+        <MetricChip icon="📡" value={effRadar ?? '—'} tip={METRIC_TIPS.radar} />
+        <MetricChip
+          icon="👁"
+          value={signalExposure != null ? signalExposure.toFixed(2) : '—'}
+          tip={METRIC_TIPS.visibility}
+        />
+        <MetricChip
+          icon="★"
+          value={formatNumber(civ.prosperityScore, 0)}
+          tip={METRIC_TIPS.prosperity}
+          gold
+        />
+        <MetricChip
+          icon="👥"
+          value={formatPopulation(civ.population ?? 1_000_000)}
+          tip={METRIC_TIPS.population}
+        />
         {traveling && <span className="tag">Межгалактика…</span>}
-        <span className="tag" title="Кредиты">
-          ◆ {premiumCredits ?? user?.premiumCredits ?? 0}
-        </span>
+        <MetricChip
+          icon="◆"
+          value={premiumCredits ?? user?.premiumCredits ?? 0}
+          tip={METRIC_TIPS.credits}
+        />
       </div>
 
       <div data-tutorial="resources">
@@ -325,7 +340,7 @@ export function MainScreen() {
 
       <footer className={styles.footer}>
         <span className="mono muted">
-          Этап 12 · sid {civ.seed} · pop {formatPopulation(civ.population ?? 0)} · ★{' '}
+          Этап 13 · sid {civ.seed} · pop {formatPopulation(civ.population ?? 0)} · ★{' '}
           {civ.prosperityScore}
           {civ.level >= 90 ? ' · glitch' : ''}
         </span>

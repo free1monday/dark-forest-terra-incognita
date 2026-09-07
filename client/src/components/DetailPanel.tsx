@@ -18,6 +18,9 @@ import {
 } from '../lib/labels';
 import { useGameStore } from '../store/gameStore';
 import { ResourceCost } from './icons/ResourceIcons';
+import { ActionCost } from './ActionCost';
+import { InfoTip } from './InfoTip';
+import { buildingTip, METRIC_TIPS, RESOURCE_TIPS } from '../lib/tooltips';
 import { BuildingIcon } from './icons/ObjectIcons';
 import styles from './DetailPanel.module.css';
 
@@ -52,7 +55,11 @@ export function DetailPanel() {
     return (
       <div className={`glass ${styles.panel}`}>
         <h2 className="panel-title">Ресурс</h2>
-        <h3 className={styles.name}>{meta.name}</h3>
+        <h3 className={styles.name}>
+          <InfoTip title={RESOURCE_TIPS[id].title} body={RESOURCE_TIPS[id].body} links={RESOURCE_TIPS[id].links}>
+            <span>{meta.name}</span>
+          </InfoTip>
+        </h3>
         <p className={styles.desc}>{meta.desc}</p>
         <dl className={styles.dl}>
           <div>
@@ -92,12 +99,20 @@ export function DetailPanel() {
     const cost = buildingUpgradeCost(id, level);
     const can = resources.highEnergy >= cost && civ.level >= def.unlockedAtLevel && !actionLoading;
     const sensorBonus = id === 'dark_sensor' ? level * 5 : null;
+    const tip = buildingTip(id, level, {
+      hePerSec: id === 'high_energy_collider' ? hePerSec : undefined,
+      radarBonus: id === 'dark_sensor' ? level * 5 : undefined,
+    });
 
     return (
       <div className={`glass ${styles.panel}`}>
         <h2 className="panel-title">Постройка</h2>
         <div style={{ margin: '0.35rem 0 0.5rem' }}><BuildingIcon id={id} size={56} /></div>
-        <h3 className={styles.name}>{labels.name}</h3>
+        <h3 className={styles.name}>
+          <InfoTip title={tip.title} body={tip.body} links={tip.links}>
+            <span>{labels.name}</span>
+          </InfoTip>
+        </h3>
         <p className={styles.desc}>{labels.desc}</p>
         <dl className={styles.dl}>
           <div>
@@ -123,14 +138,17 @@ export function DetailPanel() {
             <dd>Уровень цивилизации {def.unlockedAtLevel}+</dd>
           </div>
         </dl>
-        <button
-          type="button"
-          className="btn btn-primary"
-          disabled={!can}
-          onClick={() => void upgrade(id)}
-        >
-          Улучшить до {level + 1}
-        </button>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.55rem', alignItems: 'center', marginTop: '0.65rem' }}>
+          <ActionCost cost={{ highEnergy: cost }} have={resources} />
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={!can}
+            onClick={() => void upgrade(id)}
+          >
+            Улучшить до {level + 1}
+          </button>
+        </div>
       </div>
     );
   }
@@ -159,7 +177,11 @@ export function DetailPanel() {
             <dd className="mono">{civ.level} / 100</dd>
           </div>
           <div>
-            <dt>Процветание</dt>
+            <dt>
+              <InfoTip title={METRIC_TIPS.prosperity.title} body={METRIC_TIPS.prosperity.body} links={METRIC_TIPS.prosperity.links} compact>
+                <span>Процветание</span>
+              </InfoTip>
+            </dt>
             <dd className="mono">{civ.prosperityScore}</dd>
           </div>
           <div>

@@ -29,6 +29,8 @@ import { SolarSystemView } from './universe/SolarSystemView';
 import { CivilizationProfile } from './universe/CivilizationProfile';
 import { WeaponsPanel } from './WeaponsPanel';
 import { Tutorial } from './Tutorial';
+import { ContextualHint } from './ContextualHint';
+import { Handbook } from './Handbook';
 import { MetricChip } from './InfoTip';
 import { InfoTip } from './InfoTip';
 import { ActionCost } from './ActionCost';
@@ -47,6 +49,7 @@ export function MainScreen() {
   const [moreOpen, setMoreOpen] = useState(false);
   const [primary, setPrimary] = useState<PrimaryTab>('build');
   const [tutorialForce, setTutorialForce] = useState(false);
+  const [handbookOpen, setHandbookOpen] = useState(false);
   const [showExtras, setShowExtras] = useState(false);
 
   useEventToasts();
@@ -85,6 +88,17 @@ export function MainScreen() {
   };
 
   const lateAccent = civ.level >= 90;
+
+  const openPanel =
+    weaponsOpen ? 'weapons' :
+    mapOpen ? 'map' :
+    bridgeOpen ? 'bridge' :
+    primary === 'scan' ? 'contacts' :
+    showExtras ? 'anomalies' :
+    null;
+
+  const tutorialActive =
+    tutorialForce || civ.tutorialCompleted === false;
 
   const onGoalAction = (action: 'build' | 'explore' | 'scan' | 'level' | 'contacts' | 'wait') => {
     if (action === 'build') setPrimary('build');
@@ -131,7 +145,7 @@ export function MainScreen() {
               Ур. ↑
             </button>
           </div>
-          <div className={styles.moreWrap}>
+          <div className={styles.moreWrap} data-tutorial="more-menu" data-hint="more-menu">
             <button
               type="button"
               className="btn btn-sm btn-ghost"
@@ -173,6 +187,16 @@ export function MainScreen() {
                     Физика
                   </button>
                 )}
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setHandbookOpen(true);
+                    setMoreOpen(false);
+                  }}
+                >
+                  ❓ Справочник
+                </button>
                 <button
                   type="button"
                   role="menuitem"
@@ -340,6 +364,22 @@ export function MainScreen() {
       <CivilizationProfile open={profileOpen} onClose={() => setProfileOpen(false)} />
       <WeaponsPanel open={weaponsOpen} onClose={() => setWeaponsOpen(false)} />
       <Tutorial forceOpen={tutorialForce} onCloseForce={() => setTutorialForce(false)} />
+      <ContextualHint
+        primaryTab={primary}
+        openPanel={openPanel}
+        tutorialActive={tutorialActive}
+      />
+      <Handbook open={handbookOpen} onClose={() => setHandbookOpen(false)} />
+
+      <button
+        type="button"
+        className={styles.helpFab}
+        aria-label="Справочник"
+        title="Справочник подсказок"
+        onClick={() => setHandbookOpen(true)}
+      >
+        ?
+      </button>
 
       <footer className={styles.footer}>
         <span className="mono muted">

@@ -25,6 +25,9 @@ import {
   getBuildingLevel,
   highEnergyCapacity,
   prosperityScore,
+  rollNarrativeEvent,
+  narrativeDayKey,
+  narrativePayload,
   resolveExpeditionV2,
   resourceCapacities,
   shopBonusesFromResourceState,
@@ -333,6 +336,67 @@ export async function catchUpInTx(
         ),
       },
     });
+  }
+
+  // Stage 13: light narrative events (meteor / foreign scan) — no schema change
+  civ = (await tx.civilization.findUnique({
+    where: { id: civId },
+    include: reloadInclude(),
+  })) as CivFull;
+  {
+    const dayKey = narrativeDayKey(now);
+    const already = (civ.journal ?? []).some((j) => {
+      if (!j.payload) return false;
+      try {
+        const p = typeof j.payload === 'string' ? JSON.parse(j.payload) : j.payload;
+        return p && p.narrative === true && p.dayKey === dayKey;
+      } catch {
+        return false;
+      }
+    });
+    if (!already) {
+      const elapsedHours = Math.min(12, Math.max(0, seconds > 0 ? seconds / 3600 : elapsedMs / 3_600_000));
+      const rolled = rollNarrativeEvent({
+        civSeed: civ.seed,
+        dayKey,
+        elapsedHours: Math.max(elapsedHours, 0.2),
+        signalExposure: civ.signalExposure ?? 1,
+        civLevel: civ.level,
+      });
+      // Soft gate: only when player was away ≥ ~20 min OR random long session
+      if (rolled && (elapsedMs >= 5 * 60 * 1000 || elapsedHours >= 0.25)) {
+        const heLoss = Math.min(
+          rolled.heLoss,
+          Math.max(0, Math.floor((civ.resources?.highEnergy ?? 0) * 0.05)),
+          Math.max(0, (civ.resources?.highEnergy ?? 0) - 1)
+        );
+        if (heLoss > 0 && civ.resources) {
+          await tx.resourceState.update({
+            where: { civilizationId: civId },
+            data: { highEnergy: Math.max(0, civ.resources.highEnergy - heLoss) },
+          });
+        }
+        if (rolled.exposureDelta > 0) {
+          await tx.civilization.update({
+            where: { id: civId },
+            data: {
+              signalExposure:
+                Math.round(((civ.signalExposure ?? 1) + rolled.exposureDelta) * 1000) / 1000,
+            },
+          });
+        }
+        await addJournal(
+          tx,
+          civId,
+          rolled.type,
+          rolled.titleRu,
+          heLoss > 0
+            ? `${rolled.bodyRu} (−${heLoss} ВЭ)`
+            : rolled.bodyRu,
+          narrativePayload(rolled.kind, dayKey)
+        );
+      }
+    }
   }
 
   // Stage 6: resolve pending combat prep/transit

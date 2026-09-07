@@ -25,3 +25,4 @@ export * from './universe/worldMap';
 export * from './combat/weapons';
 export * from './universe/casus';
 export * from './tutorial';
+export * from './narrative';

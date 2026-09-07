@@ -28,7 +28,6 @@ import { Bridge } from './universe/Bridge';
 import { SolarSystemView } from './universe/SolarSystemView';
 import { CivilizationProfile } from './universe/CivilizationProfile';
 import { WeaponsPanel } from './WeaponsPanel';
-import { NextGoalBanner } from './NextGoalBanner';
 import { Tutorial } from './Tutorial';
 import { MetricChip } from './InfoTip';
 import { InfoTip } from './InfoTip';
@@ -231,8 +230,6 @@ export function MainScreen() {
         <ResourceBar />
       </div>
 
-      <NextGoalBanner onAction={onGoalAction} />
-
       <div className={styles.primaryRow} role="tablist" aria-label="Главные действия">
         <button
           type="button"
@@ -303,7 +300,7 @@ export function MainScreen() {
           </div>
           <div className={styles.secondaryGrid}>
             <ConstantsPanel />
-            <Journal />
+            <Journal onGoalAction={onGoalAction} highlight />
           </div>
           <div className={styles.tertiaryGrid}>
             <ArtifactsPanel />
@@ -313,9 +310,15 @@ export function MainScreen() {
       )}
 
       {!showExtras && (
-        <div className={styles.compactExtras}>
-          <DetailPanel />
-          <Journal />
+        <div className={styles.worldBlock}>
+          <div className={styles.worldHead}>
+            <span className={styles.worldTitle}>Мир</span>
+            <span className={styles.worldHint}>журнал + радар · главный канал связи</span>
+          </div>
+          <div className={styles.compactExtras}>
+            <Journal onGoalAction={onGoalAction} highlight />
+            <DetailPanel />
+          </div>
         </div>
       )}
 

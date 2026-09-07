@@ -278,3 +278,29 @@
     width: 100%;
   }
 }
+
+.worldBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.worldHead {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+.worldTitle {
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #7dd3fc;
+}
+.worldHint {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+.compactExtras {
+  grid-template-columns: 1.25fr 0.85fr;
+}
